@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logout } from '../actions/authActions';
 
 const Layout = ({ children, title }) => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+    const toggleSidebar = () => {
+    setSidebarOpen(!isSidebarOpen);
+  };
 
   const handleLogout = () => {
     dispatch(logout());
@@ -13,7 +18,12 @@ const Layout = ({ children, title }) => {
   };
 
   return (
-    <div className="dashboard-container">
+        <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+            <button className="hamburger-btn" onClick={toggleSidebar}>
+                <span className="hamburger-icon"></span>
+            </button>
+            <div className="mobile-overlay" onClick={toggleSidebar}></div>
+
       <aside className="sidebar">
         <h3>PID Tool</h3>
         <nav>
@@ -28,7 +38,8 @@ const Layout = ({ children, title }) => {
         </div>
       </aside>
       <main className="main-content">
-        <header>
+
+            <header>
           <h1>{title}</h1>
         </header>
         {children}

@@ -4,6 +4,7 @@ import { listRoles, createRole, updateRole, deleteRole } from '../actions/roleAc
 import { ROLE_CREATE_RESET, ROLE_UPDATE_RESET } from '../constants/roleConstants';
 import Modal from '../components/Modal';
 import RoleForm from '../components/RoleForm';
+import DeleteConfirmModal from '../components/DeleteConfirmModal';
 
 const RolesPage = () => {
   const dispatch = useDispatch();
@@ -14,18 +15,26 @@ const RolesPage = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
+  const [deleteRoleId, setDeleteRoleId] = useState(null);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
+  // Initial data fetch
   useEffect(() => {
     dispatch(listRoles());
+  }, [dispatch]);
 
-    if (successCreate) {
+  // Handle successful role creation or update
+  useEffect(() => {
+    if (successCreate || successUpdate) {
+      // Close the modal first
       setIsModalOpen(false);
-      dispatch({ type: ROLE_CREATE_RESET });
-    }
-
-    if (successUpdate) {
-      setIsModalOpen(false);
-      dispatch({ type: ROLE_UPDATE_RESET });
+      
+      // Refresh the roles list
+      dispatch(listRoles());
+      
+      // Reset the create/update state to prevent this from running again
+      if (successCreate) dispatch({ type: ROLE_CREATE_RESET });
+      if (successUpdate) dispatch({ type: ROLE_UPDATE_RESET });
     }
   }, [dispatch, successCreate, successUpdate]);
 
@@ -39,10 +48,28 @@ const RolesPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this role?')) {
-      dispatch(deleteRole(id));
+  const handleDelete = (role) => {
+    setDeleteRoleId(role.roleId);
+    setSelectedRole(role)
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteRoleId) return;
+    setIsDeleteLoading(true);
+    const result = await dispatch(deleteRole(deleteRoleId));
+    setIsDeleteLoading(false);
+    
+    // If delete was successful, refresh the roles list
+    if (result && result.success) {
+      dispatch(listRoles());
     }
+    
+    setDeleteRoleId(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteRoleId(null);
+    setIsDeleteLoading(false);
   };
 
   const handleModalClose = () => {
@@ -72,14 +99,55 @@ const RolesPage = () => {
     return null;
   };
 
+  // Mobile card view renderer for roles
+  const renderRoleCards = () => (
+    <div className="role-cards">
+      {roles.map((role) => (
+        <div key={role.roleId} className="role-card">
+          <div className="role-info">
+            <div className="role-header">
+              <div className="role-name">{role.roleName}</div>
+              <span className={`status-badge status-${role.isActive ? 'active' : 'inactive'}`}>
+                {role.isActive ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+            <div className="role-details">
+              <div className="role-detail">
+                <span className="detail-label">Role ID:</span>
+                <span className="detail-value">{role.roleId}</span>
+              </div>
+            </div>
+          </div>
+          <div className="role-actions">
+            <button 
+              className="btn-text btn-edit"
+              onClick={() => handleEdit(role)}
+              aria-label="Edit role"
+            >
+              <i className="fas fa-edit"></i> Edit
+            </button>
+            <button 
+              className="btn-text btn-delete"
+              onClick={() => handleDelete(role)}
+              aria-label="Delete role"
+            >
+              <i className="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <section>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-        <button className="btn" onClick={handleAddRole}>Add Role</button>
+    {!error && <div className="add-button-container">
+        <button className="btn btn-add" onClick={handleAddRole}>Add Role</button>
       </div>
-
+}
       <Modal isOpen={isModalOpen} onClose={handleModalClose} title={selectedRole ? 'Edit Role' : 'Add Role'}>
         <RoleForm
+          isEditMode={!!selectedRole}
           onSubmit={handleFormSubmit}
           onCancel={handleModalClose}
           initialData={selectedRole}
@@ -91,37 +159,70 @@ const RolesPage = () => {
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
-        <p className="error-message">{error}</p>
+        renderErrors(error)
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>RoleID</th>
-              <th>Role Name</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {roles.map((role) => (
-              <tr key={role.roleId}>
-                <td>{role.roleId}</td>
-                <td>{role.roleName}</td>
-                <td>
-                  <span className={`status ${role.isActive ? 'active' : 'inactive'}`}>
-                    {role.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-                <td>
-                  <a href="#!" className="action-link" onClick={() => handleEdit(role)}>Edit</a>
-                  {' | '}
-                  <a href="#!" className="action-link delete" onClick={() => handleDelete(role.roleId)}>Delete</a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <>
+          {/* Desktop Table View */}
+          <div className="desktop-view">
+            <table className="role-table">
+              <thead>
+                <tr>
+                  <th>RoleID</th>
+                  <th>Role Name</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {roles.map((role) => (
+                  <tr key={role.roleId}>
+                    <td>{role.roleId}</td>
+                    <td>{role.roleName}</td>
+                    <td>
+                      <span className={`status-badge status-${role.isActive ? 'active' : 'inactive'}`}>
+                        {role.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td>
+                      {role.roleName !== "SuperAdmin" && (  
+                         <div className="table-actions">
+                        <button 
+                          className="btn-text btn-edit"
+                          onClick={() => handleEdit(role)}
+                          aria-label="Edit role"
+                        >
+                          <i className="fas fa-edit"></i> Edit
+                        </button>
+                        <button 
+                          className="btn-text btn-delete"
+                          onClick={() => handleDelete(role)}
+                          aria-label="Delete role"
+                        >
+                          <i className="fas fa-trash"></i> Delete
+                        </button>
+                      </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Mobile Card View */}
+          <div className="mobile-view">
+            {renderRoleCards()}
+          </div>
+        </>
       )}
+      {/** Delete Role Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={!!deleteRoleId}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        loading={isDeleteLoading}
+        entityName={selectedRole?.roleName}
+      />
     </section>
   );
 };

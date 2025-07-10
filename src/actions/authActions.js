@@ -8,7 +8,12 @@ export const login = (username, password) => async (dispatch) => {
     dispatch({ type: LOGIN_SUCCESS, payload: data });
   } catch (error) {
     // The error is now a simple message string, thanks to the api.js interceptor.
-    dispatch({ type: LOGIN_FAILURE, payload: error });
+        dispatch({ 
+        type: LOGIN_FAILURE, 
+        payload: error.response && error.response.data.message 
+            ? error.response.data.message 
+            : error.message 
+    });
   }
 };
 

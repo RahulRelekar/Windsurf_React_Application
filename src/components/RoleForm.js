@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const RoleForm = ({ onSubmit, onCancel, initialData, loading }) => {
+const RoleForm = ({ onSubmit, onCancel, initialData, loading, error, isEditMode }) => {
   const [roleName, setRoleName] = useState('');
   const [isActive, setIsActive] = useState(true);
 
@@ -29,16 +29,17 @@ const RoleForm = ({ onSubmit, onCancel, initialData, loading }) => {
           onChange={(e) => setRoleName(e.target.value)}
         />
       </div>
-      <div className="form-group">
-        <label>
+      {isEditMode && (
+        <div className="form-group form-group-flex">
+          <label className="active-label">Active</label>
           <input
             type="checkbox"
+            className="active-checkbox"
             checked={isActive}
             onChange={(e) => setIsActive(e.target.checked)}
           />
-          {' '}Active
-        </label>
-      </div>
+        </div>
+      )}
       <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
         <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
         <button type="submit" className="btn" disabled={loading}>

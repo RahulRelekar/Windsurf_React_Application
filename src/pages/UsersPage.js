@@ -5,16 +5,20 @@ import { listRoles } from '../actions/roleActions';
 import { USER_CREATE_RESET, USER_UPDATE_RESET } from '../constants/userConstants';
 import Modal from '../components/Modal';
 import UserForm from '../components/UserForm';
+import DeleteConfirmModal from '../components/DeleteConfirmModal';
 
 const UsersPage = () => {
   const dispatch = useDispatch();
 
   const { loading, error, users } = useSelector((state) => state.userList);
+  const { roles } = useSelector((state) => state.roleList);
   const { loading: loadingCreate, error: errorCreate, success: successCreate } = useSelector((state) => state.userCreate);
   const { loading: loadingUpdate, error: errorUpdate, success: successUpdate } = useSelector((state) => state.userUpdate);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [deleteUserId, setDeleteUserId] = useState(null);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
   // Effect to fetch initial data when the component mounts
   useEffect(() => {
@@ -24,9 +28,14 @@ const UsersPage = () => {
 
   // Effect to handle successful user creation or update
   useEffect(() => {
-    // If a create or update operation was successful, close the modal
+    // If a create or update operation was successful, refresh the user list
     if (successCreate || successUpdate) {
+      // Close the modal first
       handleModalClose();
+      
+      // Refresh the user list
+      dispatch(listUsers());
+      
       // Reset the create/update state to prevent this from running again
       if (successCreate) dispatch({ type: USER_CREATE_RESET });
       if (successUpdate) dispatch({ type: USER_UPDATE_RESET });
@@ -43,10 +52,28 @@ const UsersPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      dispatch(deleteUser(id));
+  const handleDelete = (user) => {
+    setDeleteUserId(user.userId);
+    setSelectedUser(user)
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteUserId) return;
+    setIsDeleteLoading(true);
+    const result = await dispatch(deleteUser(deleteUserId));
+    setIsDeleteLoading(false);
+    
+    // If delete was successful, refresh the user list
+    if (result && result.success) {
+      dispatch(listUsers());
     }
+    
+    setDeleteUserId(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteUserId(null);
+    setIsDeleteLoading(false);
   };
 
   const handleModalClose = () => {
@@ -76,11 +103,68 @@ const UsersPage = () => {
     return null;
   };
 
+  // Mobile card view renderer
+  const renderUserCards = () => (
+    <div className="user-cards">
+      {users.map((user) => {
+        const userRole = user.role || 
+          (user.roleId && Array.isArray(roles) && 
+           roles.find(r => r.roleId === user.roleId)?.roleName) || '-';
+        
+        return (
+          <div key={user.userId} className="user-card">
+            <div className="user-info">
+              <span className="info-label">Username</span>
+              <div className="username">{user.username}</div>
+            </div>
+            
+            <div className="user-info">
+              <span className="info-label">Email</span>
+              <div className="info-value">{user.email}</div>
+            </div>
+            
+            <div className="user-info">
+              <span className="info-label">Role</span>
+              <div className="info-value">{userRole}</div>
+            </div>
+            
+            <div className="user-info">
+              <span className="info-label">Status</span>
+              <div className="info-value">
+                <span className={`status-badge status-${user.isActive ? 'active' : 'inactive'}`}>
+                  {user.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+            </div>
+            {userRole !== "SuperAdmin" && (
+  <div className="user-actions">
+    <button 
+      className="btn-text btn-edit"
+      onClick={() => handleEdit(user)}
+      aria-label="Edit user"
+    >
+      <i className="fas fa-edit" /> Edit
+    </button>
+    <button 
+      className="btn-text btn-delete"
+      onClick={() => handleDelete(user)}
+      aria-label="Delete user"
+    >
+      <i className="fas fa-trash" /> Delete
+    </button>
+  </div>
+)}
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <section>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-        <button className="btn" onClick={handleAddUser}>Add User</button>
-      </div>
+  {!error &&    <div className="add-button-container">
+        <button className="btn btn-add" onClick={handleAddUser}>Add User</button>
+      </div>}
 
       <Modal isOpen={isModalOpen} onClose={handleModalClose} title={selectedUser ? 'Edit User' : 'Add User'}>
         <UserForm
@@ -95,41 +179,80 @@ const UsersPage = () => {
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
-        <p className="error-message">{error}</p>
+        renderErrors(error)
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>UserID</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.userId}>
-                <td>{user.userId}</td>
-                <td>{user.username}</td>
-                <td>{user.email}</td>
-                <td>{user.roleName}</td>
-                <td>
-                  <span className={`status ${user.isActive ? 'active' : 'inactive'}`}>
-                    {user.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-                <td>
-                  <a href="#!" className="action-link" onClick={() => handleEdit(user)}>Edit</a>
-                  {' | '}
-                  <a href="#!" className="action-link delete" onClick={() => handleDelete(user.userId)}>Delete</a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <>
+          {/* Desktop Table View */}
+          <div className="desktop-view">
+            <table className="user-table">
+              <thead>
+                <tr>
+                  <th>UserID</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => {
+                  const userRole = user.role || 
+                                   (user.roleId && Array.isArray(roles) && 
+                                    roles.find(r => r.roleId === user.roleId)?.roleName) || '-';
+
+                  return (
+                    <tr key={user.userId}>
+                      <td data-label="UserID">{user.userId}</td>
+                      <td data-label="Username">{user.username}</td>
+                      <td data-label="Email">{user.email}</td>
+                      <td data-label="Role">{userRole}</td>
+                      <td data-label="Status">
+                        <span className={`status ${user.isActive ? 'active' : 'inactive'}`}>
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td data-label="Actions">
+                        {userRole !== 'SuperAdmin' && (
+                          <div className="table-actions">
+                            <button 
+                              className="btn-text btn-edit"
+                              onClick={() => handleEdit(user)}
+                              aria-label="Edit user"
+                            >
+                              <i className="fas fa-edit"></i> Edit
+                            </button>
+                            <button 
+                              className="btn-text btn-delete"
+                              onClick={() => handleDelete(user)}
+                              aria-label="Delete user"
+                            >
+                              <i className="fas fa-trash"></i> Delete
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Mobile Card View */}
+          <div className="mobile-view">
+            {renderUserCards()}
+          </div>
+        </>
       )}
+      
+      <DeleteConfirmModal
+        isOpen={!!deleteUserId}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        loading={isDeleteLoading}
+        entityName={selectedUser?.username}
+      />
     </section>
   );
 };
