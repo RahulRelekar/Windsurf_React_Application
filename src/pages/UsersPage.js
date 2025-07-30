@@ -162,9 +162,21 @@ const UsersPage = () => {
 
   return (
     <section>
-  {!error &&    <div className="add-button-container">
+  {!error && 
+    <div style={{ 
+          display: 'flex', 
+        flexDirection: 'row', 
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%', 
+        marginBottom: '10px'
+      }}>
+      <h1>Users</h1>
+    <div className="add-button-container">
         <button className="btn btn-add" onClick={handleAddUser}>Add User</button>
-      </div>}
+      </div>
+    </div>
+}
 
       <Modal isOpen={isModalOpen} onClose={handleModalClose} title={selectedUser ? 'Edit User' : 'Add User'}>
         <UserForm

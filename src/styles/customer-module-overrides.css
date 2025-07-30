@@ -1,0 +1,48 @@
+/* Horizontally scrollable table for customer list */
+.desktop-view {
+  width: 100%;
+}
+.desktop-view > div[style*='overflow-x'] {
+  overflow-x: auto;
+  width: 100%;
+}
+.user-table {
+  min-width: 600px;
+}
+
+/* Wider modal and scrollable modal body for customer forms */
+.wide-modal .modal-content {
+  max-width: 600px;
+  width: 95vw;
+}
+.scrollable-modal .modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Responsive two-column grid for customer form fields */
+.customer-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 2rem;
+}
+.customer-form-grid .form-group {
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .customer-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .wide-modal .modal-content {
+    max-width: 98vw;
+  }
+}
+
+/* Ensure modal actions are always visible at the bottom */
+.customer-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}

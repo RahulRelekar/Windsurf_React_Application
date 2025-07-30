@@ -141,9 +141,20 @@ const RolesPage = () => {
 
   return (
     <section>
-    {!error && <div className="add-button-container">
+    {!error && 
+    <div style={{ 
+          display: 'flex', 
+        flexDirection: 'row', 
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%', 
+        marginBottom: '10px'
+      }}>
+      <h1>Roles</h1>
+    <div className="add-button-container">
         <button className="btn btn-add" onClick={handleAddRole}>Add Role</button>
       </div>
+    </div>
 }
       <Modal isOpen={isModalOpen} onClose={handleModalClose} title={selectedRole ? 'Edit Role' : 'Add Role'}>
         <RoleForm

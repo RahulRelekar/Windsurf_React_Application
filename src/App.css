@@ -36,3 +36,25 @@
     transform: rotate(360deg);
   }
 }
+
+/* Projects List Layout */
+.projects-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .projects-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .projects-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
