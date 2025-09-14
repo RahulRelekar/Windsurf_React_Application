@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import '../styles/customer-form-3col.css';
+import AsyncSelect from 'react-select/async';
 
 const CustomerForm = ({
   initialData = {},
   onSubmit,
   onCancel,
+  customers,
+  businessUnits,
   loading,
   errors = {},
 }) => {
@@ -18,7 +21,14 @@ const CustomerForm = ({
   //   createdByUserName: 'admin'
   // }
   const isEdit = !!initialData?.customerID;
-  const [customerName, setCustomerName] = useState(initialData?.customerName || '');
+  const [selectedCustomer, setSelectedCustomer] = useState(initialData?.customerID ? {
+    label: initialData.customerName,
+    value: initialData.customerID
+  } : null);
+  const [selectedBuid, setSelectedBuid] = useState(initialData?.assignedBUID ? {
+    label: initialData.buName,
+    value: initialData.assignedBUID
+  } : null);
   const [customerAbbreviation, setCustomerAbbreviation] = useState(initialData?.customerAbbreviation || '');
   const [customerCode, setCustomerCode] = useState(initialData?.customerCode || '');
   const [assignedBUID, setAssignedBUID] = useState(initialData?.assignedBUID || '');
@@ -34,7 +44,13 @@ const CustomerForm = ({
     typeof initialData?.isActive === 'boolean' ? initialData?.isActive : true
   );
 
+  const [customerName, setCustomerName] = useState('');
+
   useEffect(() => {
+    setSelectedCustomer(initialData?.customerID ? {
+      label: initialData.customerName,
+      value: initialData.customerID
+    } : null);
     setCustomerName(initialData?.customerName || '');
     setCustomerAbbreviation(initialData?.customerAbbreviation || '');
     setCustomerCode(initialData?.customerCode || '');
@@ -54,7 +70,7 @@ const CustomerForm = ({
     e.preventDefault();
     onSubmit({
       id: initialData?.customerID,
-      customerName,
+      customerName: selectedCustomer?.label || '',
       customerAbbreviation,
       customerCode,
       assignedBUID,
@@ -70,6 +86,7 @@ const CustomerForm = ({
     });
   };
 
+
   return (
     <form onSubmit={handleSubmit} className="form-responsive customer-form-grid scrollable ">
       {isEdit && (
@@ -80,7 +97,8 @@ const CustomerForm = ({
       )}
       <div className="form-group">
         <label htmlFor="customerName">Name<span style={{ color: 'red' }}>*</span></label>
-        <input
+        {/* drop should be given of cusomter remove input */}
+        {/* <input
           id="customerName"
           type="text"
           className={`form-control ${errors.customerName ? 'is-invalid' : ''}`}
@@ -88,7 +106,34 @@ const CustomerForm = ({
           onChange={(e) => setCustomerName(e.target.value)}
           disabled={loading}
           required
-        />
+        /> */}
+        <AsyncSelect
+                id="customerName"
+                name="customerName"
+                cacheOptions
+                defaultOptions
+                loadOptions={(inputValue) => {
+                  return new Promise((resolve) => {
+                    const filteredOptions = customers
+                      .filter((customer) =>
+                        customer.customerName.toLowerCase().includes(inputValue.toLowerCase())
+                      )
+                      .map((customer) => ({
+                        label: customer.customerName,
+                        value: customer.customerID
+                      }));
+                    resolve(filteredOptions);
+                  });
+                }}
+                value={selectedCustomer}
+                onChange={(newValue) => {
+                  setSelectedCustomer(newValue);
+                  setCustomerName(newValue?.label || '');
+                }}
+                placeholder="Search for customer names..."
+                isClearable
+                isDisabled={loading}
+              />
         {errors.customerName && <div className="invalid-feedback">{errors.customerName}</div>}
       </div>
       <div className="form-group">
@@ -104,16 +149,37 @@ const CustomerForm = ({
         {errors.customerAbbreviation && <div className="invalid-feedback">{errors.customerAbbreviation}</div>}
       </div>
       <div className="form-group">
-        <label htmlFor="customerCode">Customer Code</label>
-        <input
-          id="customerCode"
-          type="text"
-          className={`form-control ${errors.customerCode ? 'is-invalid' : ''}`}
-          value={customerCode}
-          onChange={(e) => setCustomerCode(e.target.value)}
-          disabled={loading}
-        />
-        {errors.customerCode && <div className="invalid-feedback">{errors.customerCode}</div>}
+        <label htmlFor="buName">BU Name</label>
+        <AsyncSelect
+                id="buName"
+                name="buName"
+                cacheOptions
+                defaultOptions
+                loadOptions={(inputValue) => {
+                  return new Promise((resolve) => {
+                    const filteredOptions = businessUnits
+                      .filter((businessUnit) =>
+                        businessUnit.buName.toLowerCase().includes(inputValue.toLowerCase())
+                      )
+                      .map((businessUnit) => ({
+                        label: businessUnit.buName,
+                        value: businessUnit.buid
+                      }));
+                    resolve(filteredOptions);
+                  });
+                }}
+                value={selectedBuid}
+                onChange={(newValue) => {
+                  setSelectedBuid(newValue);
+                  setAssignedBUID(newValue?.value || '');
+                  setBuCode(newValue?.value || '');
+                  setBuName(newValue?.label || '');
+                }}
+                placeholder="Search for bu names..."
+                isClearable
+                isDisabled={loading}
+              />
+        {errors.buName && <div className="invalid-feedback">{errors.buName}</div>}
       </div>
       <div className="form-group">
         <label htmlFor="assignedBUID">Assigned BUID</label>
@@ -127,18 +193,7 @@ const CustomerForm = ({
         />
         {errors.assignedBUID && <div className="invalid-feedback">{errors.assignedBUID}</div>}
       </div>
-      <div className="form-group">
-        <label htmlFor="buName">BU Name</label>
-        <input
-          id="buName"
-          type="text"
-          className={`form-control ${errors.buName ? 'is-invalid' : ''}`}
-          value={buName}
-          onChange={(e) => setBuName(e.target.value)}
-          disabled={loading}
-        />
-        {errors.buName && <div className="invalid-feedback">{errors.buName}</div>}
-      </div>
+
       <div className="form-group">
         <label htmlFor="buCode">BU Code</label>
         <input
@@ -151,6 +206,22 @@ const CustomerForm = ({
         />
         {errors.buCode && <div className="invalid-feedback">{errors.buCode}</div>}
       </div>
+
+      <div className="form-group">
+        <label htmlFor="customerCode">Customer Code</label>
+        <input
+          id="customerCode"
+          type="text"
+          className={`form-control ${errors.customerCode ? 'is-invalid' : ''}`}
+          value={customerCode}
+          onChange={(e) => setCustomerCode(e.target.value)}
+          disabled={loading}
+        />
+        {errors.customerCode && <div className="invalid-feedback">{errors.customerCode}</div>}
+      </div>
+      
+     
+      
       <div className="form-group">
         <label htmlFor="gstDocumentPath">GST Document Path</label>
         <input
@@ -175,7 +246,7 @@ const CustomerForm = ({
         />
         {errors.fullPostalAddress && <div className="invalid-feedback">{errors.fullPostalAddress}</div>}
       </div>
-      <div className="form-group">
+      {/* <div className="form-group">
         <label htmlFor="city">City</label>
         <input
           id="city"
@@ -222,7 +293,7 @@ const CustomerForm = ({
           disabled={loading}
         />
         {errors.type && <div className="invalid-feedback">{errors.type}</div>}
-      </div>
+      </div> */}
       <div className="form-group">
         <label htmlFor="customerActive">Active</label>
         <select

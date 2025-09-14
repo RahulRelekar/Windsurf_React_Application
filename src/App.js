@@ -12,6 +12,7 @@ import SegmentList from './pages/SegmentList';
 import CustomerList from './pages/CustomerList';
 import ProjectsPage from './pages/ProjectsPage';
 import './styles/ProjectsPage.css';
+import ProjectsCreatePage from './pages/ProjectsCreatePage';
 
 function App() {
   return (
@@ -26,7 +27,8 @@ function App() {
         <Route path="/business-units" element={<Layout title="Business Unit Management"><BusinessUnitList /></Layout>} />
         <Route path="/segments" element={<Layout title="Segment Management"><SegmentList /></Layout>} />
         <Route path="/customers" element={<Layout title="Customer Management"><CustomerList /></Layout>} />
-        <Route path="/projects" element={<Layout title="Projects"><ProjectsPage /></Layout>} />
+        <Route path="/projects" element={<Layout title="Projects"><ProjectsCreatePage /></Layout>} />
+        <Route path="/projects-id-generator" element={<Layout title="Projects"><ProjectsPage /></Layout>} />
       </Route>
     </Routes>
   );

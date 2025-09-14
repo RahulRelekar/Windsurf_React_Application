@@ -1,60 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  listCustomers,
-  createCustomerAction,
-  updateCustomerAction,
-  deleteCustomerAction
-} from '../actions/customerActions';
-import CustomerForm from '../components/CustomerForm';
+  listBusinessUnits,
+  createBusinessUnitAction,
+  updateBusinessUnitAction,
+  deleteBusinessUnitAction
+} from '../actions/businessUnitActions';
+import BusinessUnitForm from '../components/BusinessUnitForm';
 import Modal from '../components/Modal';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
-import '../styles/customer-module-overrides.css';
-import { listBusinessUnits } from '../actions/businessUnitActions';
+import ProjectForm from '../components/ProjectForm';
+import { createProjectAction, deleteProjectAction, listProjects, updateProjectAction } from '../actions/projectActions';
 
-const CustomerList = () => {
+const ProjectsCreatePage = () => {
   const dispatch = useDispatch();
-  const customerList = useSelector((state) => state.customerList);
-  const businessUnitList = useSelector((state) => state.businessUnitList);
-  const { loading, customers, error } = customerList;
-  const { loading: loadingBusinessUnit, businessUnits, error: errorBusinessUnit } = businessUnitList;
+  const projectList = useSelector((state) => state.projectList);
+  const { loading, projects, error } = projectList;
 
-  const customerCreate = useSelector((state) => state.customerCreate);
-  const { loading: loadingCreate, error: errorCreate, success: successCreate } = customerCreate;
+  const projectCreate = useSelector((state) => state.projectCreate);
+  const { loading: loadingCreate, error: errorCreate, success: successCreate } = projectCreate;
 
-  const customerUpdate = useSelector((state) => state.customerUpdate);
-  const { loading: loadingUpdate, error: errorUpdate, success: successUpdate } = customerUpdate;
+  const projectUpdate = useSelector((state) => state.projectUpdate);
+  const { loading: loadingUpdate, error: errorUpdate, success: successUpdate } = projectUpdate;
 
-  const customerDelete = useSelector((state) => state.customerDelete);
-  const { loading: loadingDelete, error: errorDelete, success: successDelete } = customerDelete;
+  const projectDelete = useSelector((state) => state.projectDelete);
+  const { loading: loadingDelete, error: errorDelete, success: successDelete } = projectDelete;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedBusinessUnit, setSelectedBusinessUnit] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
 
   useEffect(() => {
-    dispatch(listCustomers());
-    dispatch(listBusinessUnits());
+    dispatch(listProjects());
   }, [dispatch, successCreate, successUpdate, successDelete]);
 
   const handleAdd = () => {
-    setSelectedCustomer(null);
+    setSelectedBusinessUnit(null);
     setIsModalOpen(true);
   };
-  const handleEdit = (customer) => {
-    setSelectedCustomer(customer);
+  const handleEdit = (bu) => {
+    setSelectedBusinessUnit(bu);
     setIsModalOpen(true);
   };
   const handleModalClose = () => {
     setIsModalOpen(false);
-    setSelectedCustomer(null);
+    setSelectedBusinessUnit(null);
   };
 
-  const handleDelete = (customer) => {
-    setDeleteId(customer.customerID);
+  const handleDelete = (bu) => {
+    setDeleteId(bu.coreProjectID);
     setDeleteError(null);
     setDeleteSuccess(false);
   };
@@ -62,7 +59,7 @@ const CustomerList = () => {
     if (!deleteId) return;
     setIsDeleteLoading(true);
     try {
-      await dispatch(deleteCustomerAction(deleteId));
+      await dispatch(deleteProjectAction(deleteId));
       setDeleteSuccess(true);
     } catch (err) {
       setDeleteError('Failed to delete.');
@@ -78,11 +75,11 @@ const CustomerList = () => {
   };
 
   const handleFormSubmit = (formData) => {
-    if (selectedCustomer) {
-      dispatch(updateCustomerAction(selectedCustomer.customerID, formData));
+    if (selectedBusinessUnit) {
+      dispatch(updateProjectAction(selectedBusinessUnit.coreProjectID, formData));
       setIsModalOpen(false);
     } else {
-      dispatch(createCustomerAction(formData));
+      dispatch(createProjectAction(formData));
       setIsModalOpen(false);
     }
   };
@@ -109,12 +106,12 @@ const CustomerList = () => {
     return `${day} ${month} ${year}`;
   };
 
-  const renderCustomerCards = () => (
-    <div className="customer-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {customers.map((customer) => (
+  const renderBusinessUnitCards = () => (
+    <div className="businessunit-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {projects.map((bu) => (
         <div
-          key={customer.customerID}
-          className="customer-card"
+          key={bu.coreProjectID}
+          className="businessunit-card"
           style={{
             border: '1px solid #ddd',
             borderRadius: 8,
@@ -130,25 +127,30 @@ const CustomerList = () => {
           }}
         >
           <div className="row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
-            <div style={{ flex: 1, minWidth: 120 }}><strong>ID:</strong> {customer.customerID}</div>
-            <div style={{ flex: 1, minWidth: 120 }}><strong>Name:</strong> {customer.customerName}</div>
+            <div style={{ flex: 1, minWidth: 120 }}><strong>ID:</strong> {bu.coreProjectID}</div>
+            {/* <div style={{ flex: 1, minWidth: 120 }}><strong>Code:</strong> {bu.buCode}</div> */}
+            <div style={{ flex: 1, minWidth: 120 }}><strong>Name:</strong> {bu.projectName}</div>
           </div>
           <div className="row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
-            <div style={{ flex: 1, minWidth: 120 }}><strong>Active:</strong> {customer.isActive ? 'Yes' : 'No'}</div>
-            <div style={{ flex: 1, minWidth: 120 }}><strong>Created By:</strong> {customer.createdByUserName}</div>
+          <div style={{ flex: 1, minWidth: 120 }}><strong>Customer Code Start Series:</strong> {bu.projectAbbreviation}</div>
           </div>
-          <div className="customer-actions" style={{ display: 'flex', gap: '1rem', marginTop: 8 }}>
+          <div className="row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
+            <div style={{ flex: 1, minWidth: 120 }}><strong>Active:</strong> {bu.isActive ? 'Yes' : 'No'}</div>
+            <div style={{ flex: 1, minWidth: 120 }}><strong>Created:</strong> {formatDate(bu.createdDate)}</div>
+            <div style={{ flex: 1, minWidth: 120 }}><strong>Created By:</strong> {bu.createdByUserName}</div>
+          </div>
+          <div className="businessunit-actions" style={{ display: 'flex', gap: '1rem', marginTop: 8 }}>
             <button
               className="btn-text btn-edit"
-              onClick={() => handleEdit(customer)}
-              aria-label="Edit customer"
+              onClick={() => handleEdit(bu)}
+              aria-label="Edit business unit"
             >
               <i className="fas fa-edit" /> Edit
             </button>
             <button
               className="btn-text btn-delete"
-              onClick={() => handleDelete(customer)}
-              aria-label="Delete customer"
+              onClick={() => handleDelete(bu)}
+              aria-label="Delete business unit"
             >
               <i className="fas fa-trash" /> Delete
             </button>
@@ -158,45 +160,38 @@ const CustomerList = () => {
     </div>
   );
 
-  // {
-  //   "customerID": 1,
-  //   "customerName": "test111",
-  //   "customerAbbreviation": "STRI",
-  //   "customerCode": "100",
-  //   "assignedBUID": 2,
-  //   "buName": "",
-  //   "buCode": "",
-  //   "gstDocumentPath": "string",
-  //   "fullPostalAddress": "string",
-  //   "city": "string",
-  //   "isActive": true,
-  //   "createdDate": "2025-07-14T08:49:18.1066667",
-  //   "createdByUserName": ""
-  // },
+//   {
+//     "buid": 1,
+//     "buName": "Digital Application Solutions (DAPS)",
+//     "buCode": "D",
+//     "isActive": true,
+//     "customerCodeStartSeries": 100,
+//     "createdDate": "0001-01-01T00:00:00",
+//     "createdByUserName": null
+//   },
+
   return (
-    <section className="scrollable w-50">
+    <section>
       {!error && (
         <div style={{ 
-            display: 'flex',
+          display: 'flex',
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
           width: '100%',
           marginBottom: '10px'
         }}>
-          <h1>Customers</h1>
+          <h1>Projects</h1>
         <div className="add-button-container">
-          <button className="btn btn-add" onClick={handleAdd}>Add Customer</button>
+          <button className="btn btn-add" onClick={handleAdd}>Add Project</button>
         </div>
         </div>
       )}
-      <Modal isOpen={isModalOpen} onClose={handleModalClose} title={selectedCustomer ? 'Edit Customer' : 'Add Customer'} customClass="wide-modal scrollable-modal">
-        <CustomerForm
+      <Modal isOpen={isModalOpen} onClose={handleModalClose} title={selectedBusinessUnit ? 'Edit Project' : 'Add Project'}>
+        <ProjectForm
           onSubmit={handleFormSubmit}
           onCancel={handleModalClose}
-          initialData={selectedCustomer}
-          customers={customers}
-          businessUnits={businessUnits}
+          initialData={selectedBusinessUnit}
           loading={loadingCreate || loadingUpdate}
         />
         {(errorCreate || errorUpdate) && renderErrors(errorCreate || errorUpdate)}
@@ -208,55 +203,44 @@ const CustomerList = () => {
       ) : (
         <>
           {/* Desktop Table View */}
-          <div className="desktop-view scrollable scrollable-table">
+          <div className="desktop-view">
             <table className="user-table">
               <thead>
                 <tr>
                   <th>ID</th>
+                  {/* <th>Code</th> */}
                   <th>Name</th>
+                 
                   <th>Abbreviation</th>
-                  <th>CustomerCode</th>
-                  <th>Assigned BUID</th>
-                  <th>BU Name</th>
-                  <th>BU Code</th>
-                  <th>GST Document Path</th>
-                  <th>Full Postal Address</th>
-                  <th>City</th> 
                   <th>Active</th>
                   <th>Created Date</th>
-                  <th>Created By</th>
+                  {/* <th>Created By</th> */}
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {customers.map((customer) => (
-                  <tr key={customer.customerID}>
-                    <td>{customer.customerID}</td>
-                    <td>{customer.customerName}</td>
-                    <td>{customer.customerAbbreviation}</td>
-                    <td>{customer.customerCode}</td>
-                    <td>{customer.assignedBUID}</td>
-                    <td>{customer.buName}</td>
-                    <td>{customer.buCode}</td>
-                    <td>{customer.gstDocumentPath}</td>
-                    <td>{customer.fullPostalAddress}</td>
-                    <td>{customer.city}</td>
-                    <td>{customer.isActive ? 'Yes' : 'No'}</td>
-                    <td>{formatDate(customer.createdDate)}</td>
-                    <td>{customer.createdByUserName}</td>
+                {projects.map((bu) => (
+                  <tr key={bu.coreProjectID}>
+                    <td>{bu.coreProjectID}</td>
+                    {/* <td>{bu.buCode}</td> */}
+                    <td>{bu.projectName}</td>
+                    <td>{bu.projectAbbreviation}</td>
+                    <td>{bu.isActive ? 'Yes' : 'No'}</td>
+                    <td>{formatDate(bu.createdDate)}</td>
+                    {/* <td>{bu.createdByUserName}</td> */}
                     <td>
                       <div className="table-actions">
                         <button
                           className="btn-text btn-edit"
-                          onClick={() => handleEdit(customer)}
-                          aria-label="Edit customer"
+                          onClick={() => handleEdit(bu)}
+                          aria-label="Edit business unit"
                         >
                           <i className="fas fa-edit"></i> Edit
                         </button>
                         <button
                           className="btn-text btn-delete"
-                          onClick={() => handleDelete(customer)}
-                          aria-label="Delete customer"
+                          onClick={() => handleDelete(bu)}
+                          aria-label="Delete business unit"
                         >
                           <i className="fas fa-trash"></i> Delete
                         </button>
@@ -269,7 +253,7 @@ const CustomerList = () => {
           </div>
           {/* Mobile Card View */}
           <div className="mobile-view">
-            {renderCustomerCards()}
+            {renderBusinessUnitCards()}
           </div>
         </>
       )}
@@ -279,10 +263,10 @@ const CustomerList = () => {
         onConfirm={handleDeleteConfirm}
         loading={isDeleteLoading}
         error={deleteError}
-        entityName={customers?.find((c) => c.customerID === deleteId)?.customerName}
+        entityName={projects?.find((bu) => bu.coreProjectID === deleteId)?.projectName}
       />
     </section>
   );
 };
 
-export default CustomerList;
+export default ProjectsCreatePage;

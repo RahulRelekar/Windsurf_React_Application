@@ -5,6 +5,8 @@ import { getCustomers } from '../api/customerApi';
 import { getBusinessUnits } from '../api/businessUnitApi';
 import { fetchBillingTypes } from '../api/billingTypeApi';
 import { getSegments } from '../api/segmentApi';
+import { listProjects } from '../actions/projectActions';
+import { getProjects } from '../api/projectsApi';
 
 const initialState = {
   projectName: '',
@@ -35,17 +37,19 @@ const ProjectCreateModal = ({ open, onClose, onSubmit, loading, error, project, 
     const loadEditData = async () => {
       if (isEditMode && project) {
         try {
-          const [customers, businessUnits, billingTypes, segments] = await Promise.all([
+          const [customers, businessUnits, billingTypes, segments, Coreproject] = await Promise.all([
             getCustomers(),
             getBusinessUnits(),
             fetchBillingTypes(),
-            getSegments()
+            getSegments(),
+            getProjects()
           ]);
   
           const customer = customers.data.find(c => c.customerID === project.customerID);
           const businessUnit = businessUnits.data.find(b => b.buid === project.buid);
           const billingType = billingTypes.data.find(b => b.billingTypeID === project.billingTypeID);
           const segment = segments.data.find(s => s.segmentID === project.segmentID);
+          const coreProject = Coreproject.data.find(c => c.coreProjectID === project.coreProjectID);
   
           setForm({
             ...project,
@@ -55,6 +59,7 @@ const ProjectCreateModal = ({ open, onClose, onSubmit, loading, error, project, 
             segmentName: segment?.segmentName || '',
             projectStartDate: formatDateForInput(project.projectStartDate),
             projectEndDate: formatDateForInput(project.projectEndDate),
+            coreProject : coreProject
           });
         } catch (error) {
           console.error('Failed to load edit data:', error);
@@ -79,6 +84,7 @@ const ProjectCreateModal = ({ open, onClose, onSubmit, loading, error, project, 
       buid: 'buName',
       billingTypeID: 'billingTypeName',
       segmentID: 'segmentName',
+      coreProjectID: 'projectName',
     }[idField];
   
     setForm(prevForm => ({
@@ -151,9 +157,33 @@ const ProjectCreateModal = ({ open, onClose, onSubmit, loading, error, project, 
         </div>
         <form onSubmit={handleSubmit}>
           <div className="project-form">
-            <div className="form-group">
+            {/* <div className="form-group">
               <label htmlFor="projectName">Project Name</label>
               <input id="projectName" name="projectName" value={form.projectName} onChange={handleChange} required />
+            </div> */}
+            
+  {/* //   "coreProjectID": 2,
+  //   "projectName": "sdsdsd",
+  //   "projectAbbreviation": "TSXX",
+  //   "createdDate": "2025-08-15T04:18:50.04",
+  //   "isActive": true */}
+
+            <div className="form-group">
+              <label htmlFor="customerID">Project Name</label>
+              <AsyncSelect
+                id="projectName"
+                name="projectName"
+                cacheOptions
+                defaultOptions
+                loadOptions={loadOptions(getProjects, 'projectName', 'coreProjectID')}
+                value={form.coreProjectID ? { 
+                  label: form.projectName || 'Loading...', 
+                  value: form.coreProjectID 
+                } : null}
+                onChange={handleSelectChange}
+                placeholder="Search for a project names..."
+                isClearable
+              />
             </div>
             <div className="form-group">
               <label htmlFor="projectAbbreviation">Abbreviation (4 chars)</label>

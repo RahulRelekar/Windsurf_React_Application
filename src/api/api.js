@@ -2,7 +2,7 @@ import axios from 'axios';
 
 
 const api = axios.create({
-  baseURL: 'https://projectidgeneration.azurewebsites.net/api',
+  baseURL:'https://pidcreation.azurewebsites.net/api',
   headers: {
     'Content-Type': 'application/json',
   },

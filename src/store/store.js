@@ -34,6 +34,7 @@ import {
   customerUpdateReducer,
   customerDeleteReducer
 } from '../reducers/customerReducers';
+import { projectCreateReducer, projectDeleteReducer, projectDetailsReducer, projectListReducer, projectUpdateReducer } from '../reducers/ProjectCore';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -65,6 +66,11 @@ const rootReducer = combineReducers({
   customerCreate: customerCreateReducer,
   customerUpdate: customerUpdateReducer,
   customerDelete: customerDeleteReducer,
+projectList: projectListReducer,
+projectDetails: projectDetailsReducer,
+projectCreate: projectCreateReducer,
+projectUpdate: projectUpdateReducer,
+projectDelete: projectDeleteReducer,
 });
 
 const middleware = [thunk];
