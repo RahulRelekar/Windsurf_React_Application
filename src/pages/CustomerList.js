@@ -34,6 +34,8 @@ const CustomerList = () => {
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [searchCustomer, setSearchCustomer] = useState('');
+  const [searchBU, setSearchBU] = useState('');
 
   useEffect(() => {
     dispatch(listCustomers());
@@ -109,85 +111,162 @@ const CustomerList = () => {
     return `${day} ${month} ${year}`;
   };
 
+  // Helper function to get BU details from assignedBUID
+  const getBUDetails = (assignedBUID) => {
+    const businessUnit = businessUnits.find((bu) => bu.buid === assignedBUID);
+    return {
+      buName: businessUnit?.buName || 'N/A',
+      buCode: businessUnit?.buCode || 'N/A'
+    };
+  };
+
+  // Normalize server-side validation errors (RFC 9110 problem+json) into field-level errors
+  const normalizeFieldErrors = (err) => {
+    if (!err) return {};
+    // If the error is plain text
+    if (typeof err === 'string') return { general: err };
+
+    const result = {};
+    const keyMap = {
+      CustomerName: 'customerName',
+      CustomerAbbreviation: 'customerAbbreviation',
+      CustomerCode: 'customerCode',
+      AssignedBUID: 'assignedBUID',
+      BUName: 'buName',
+      BuName: 'buName',
+      BUCode: 'buCode',
+      BuCode: 'buCode',
+      GSTDocumentPath: 'gstDocumentPath',
+      GstDocumentPath: 'gstDocumentPath',
+      FullPostalAddress: 'fullPostalAddress',
+      City: 'city',
+      Email: 'email',
+      Phone: 'phone',
+      Type: 'type',
+      IsActive: 'isActive',
+    };
+
+    if (err && typeof err === 'object') {
+      if (err.errors && typeof err.errors === 'object') {
+        Object.entries(err.errors).forEach(([key, messages]) => {
+          const firstLower = key ? key.charAt(0) + key.slice(1) : key; // keep case after first char
+          const camelGuess = key ? key.charAt(0).toLowerCase() + key.slice(1) : key;
+          const mappedKey = keyMap[key] || keyMap[firstLower] || keyMap[camelGuess] || camelGuess;
+          result[mappedKey] = Array.isArray(messages) ? messages.join(', ') : String(messages);
+        });
+      }
+      // carry general details if present
+      if (err.title && !result.general) {
+        result.general = err.title;
+      }
+      if (err.message && !result.general) {
+        result.general = err.message;
+      }
+    }
+    return result;
+  };
+
+  const filteredCustomers = customers.filter((customer) => {
+    const nameMatch = (customer.customerName || '').toLowerCase().includes(searchCustomer.toLowerCase());
+    const buDetails = getBUDetails(customer.assignedBUID);
+    const buMatch = buDetails.buName.toLowerCase().includes(searchBU.toLowerCase());
+    return nameMatch && buMatch;
+  });
+
   const renderCustomerCards = () => (
-    <div className="customer-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {customers.map((customer) => (
-        <div
-          key={customer.customerID}
-          className="customer-card"
-          style={{
-            border: '1px solid #ddd',
-            borderRadius: 8,
-            padding: '1rem',
-            background: '#fff',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-            width: '100%',
-            maxWidth: 480,
-            margin: '0 auto',
-          }}
-        >
-          <div className="row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
-            <div style={{ flex: 1, minWidth: 120 }}><strong>ID:</strong> {customer.customerID}</div>
-            <div style={{ flex: 1, minWidth: 120 }}><strong>Name:</strong> {customer.customerName}</div>
+    <div className="customer-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', height: 'calc(100vh - 200px)' }}>
+      {filteredCustomers.map((customer) => {
+        const buDetails = getBUDetails(customer.assignedBUID);
+        return (
+          <div
+            key={customer.customerID}
+            className="customer-card"
+            style={{
+              border: '1px solid #ddd',
+              borderRadius: 8,
+              padding: '1rem',
+              background: '#fff',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              width: '100%',
+              maxWidth: 480,
+              margin: '0 auto',
+            }}
+          >
+            <div className="row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
+              <div style={{ flex: 1, minWidth: 120 }}><strong>ID:</strong> {customer.customerID}</div>
+              <div style={{ flex: 1, minWidth: 120 }}><strong>Name:</strong> {customer.customerName}</div>
+            </div>
+            <div className="row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
+              <div style={{ flex: 1, minWidth: 120 }}><strong>BUID:</strong> {customer.assignedBUID}</div>
+              <div style={{ flex: 1, minWidth: 120 }}><strong>BU Name:</strong> {buDetails.buName}</div>
+            </div>
+            <div className="row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
+              <div style={{ flex: 1, minWidth: 120 }}><strong>BU Code:</strong> {buDetails.buCode}</div>
+              <div style={{ flex: 1, minWidth: 120 }}><strong>Active:</strong> {customer.isActive ? 'Yes' : 'No'}</div>
+            </div>
+            <div className="row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
+              <div style={{ flex: 1, minWidth: 120 }}><strong>Created By:</strong> {customer.createdByUserName}</div>
+            </div>
+            <div className="customer-actions" style={{ display: 'flex', gap: '1rem', marginTop: 8 }}>
+              <button
+                className="btn-text btn-edit"
+                onClick={() => handleEdit(customer)}
+                aria-label="Edit customer"
+              >
+                <i className="fas fa-edit" /> Edit
+              </button>
+              <button
+                className="btn-text btn-delete"
+                onClick={() => handleDelete(customer)}
+                aria-label="Delete customer"
+              >
+                <i className="fas fa-trash" /> Delete
+              </button>
+            </div>
           </div>
-          <div className="row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
-            <div style={{ flex: 1, minWidth: 120 }}><strong>Active:</strong> {customer.isActive ? 'Yes' : 'No'}</div>
-            <div style={{ flex: 1, minWidth: 120 }}><strong>Created By:</strong> {customer.createdByUserName}</div>
-          </div>
-          <div className="customer-actions" style={{ display: 'flex', gap: '1rem', marginTop: 8 }}>
-            <button
-              className="btn-text btn-edit"
-              onClick={() => handleEdit(customer)}
-              aria-label="Edit customer"
-            >
-              <i className="fas fa-edit" /> Edit
-            </button>
-            <button
-              className="btn-text btn-delete"
-              onClick={() => handleDelete(customer)}
-              aria-label="Delete customer"
-            >
-              <i className="fas fa-trash" /> Delete
-            </button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 
-  // {
-  //   "customerID": 1,
-  //   "customerName": "test111",
-  //   "customerAbbreviation": "STRI",
-  //   "customerCode": "100",
-  //   "assignedBUID": 2,
-  //   "buName": "",
-  //   "buCode": "",
-  //   "gstDocumentPath": "string",
-  //   "fullPostalAddress": "string",
-  //   "city": "string",
-  //   "isActive": true,
-  //   "createdDate": "2025-07-14T08:49:18.1066667",
-  //   "createdByUserName": ""
-  // },
   return (
     <section className="scrollable w-50">
       {!error && (
-        <div style={{ 
-            display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-          marginBottom: '10px'
-        }}>
+        <div className="customers-header">
           <h1>Customers</h1>
-        <div className="add-button-container">
-          <button className="btn btn-add" onClick={handleAdd}>Add Customer</button>
-        </div>
+          <div className="customers-controls">
+            <div className="search-inputs">
+              <div className="search-input-wrapper">
+                <i className="fas fa-search search-icon"></i>
+                <input
+                  type="text"
+                  placeholder="Search Customer Name"
+                  value={searchCustomer}
+                  onChange={(e) => setSearchCustomer(e.target.value)}
+                  className="form-control search-input"
+                />
+              </div>
+              <div className="search-input-wrapper">
+                <i className="fas fa-building search-icon"></i>
+                <input
+                  type="text"
+                  placeholder="Search BU Name"
+                  value={searchBU}
+                  onChange={(e) => setSearchBU(e.target.value)}
+                  className="form-control search-input"
+                />
+              </div>
+            </div>
+            <div className="add-button-container" style={{marginTop:15}}>
+              <button className="btn btn-add" onClick={handleAdd}>
+                <i className="fas fa-plus"></i>
+                <span>Add Customer</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
       <Modal isOpen={isModalOpen} onClose={handleModalClose} title={selectedCustomer ? 'Edit Customer' : 'Add Customer'} customClass="wide-modal scrollable-modal">
@@ -198,8 +277,9 @@ const CustomerList = () => {
           customers={customers}
           businessUnits={businessUnits}
           loading={loadingCreate || loadingUpdate}
+          errors={normalizeFieldErrors(errorCreate || errorUpdate)}
         />
-        {(errorCreate || errorUpdate) && renderErrors(errorCreate || errorUpdate)}
+        {(errorCreate || errorUpdate) && renderErrors(normalizeFieldErrors(errorCreate || errorUpdate).general)}
       </Modal>
       {loading ? (
         <p>Loading...</p>
@@ -215,13 +295,13 @@ const CustomerList = () => {
                   <th>ID</th>
                   <th>Name</th>
                   <th>Abbreviation</th>
-                  <th>CustomerCode</th>
+                  <th>Customer Code</th>
                   <th>Assigned BUID</th>
                   <th>BU Name</th>
                   <th>BU Code</th>
-                  <th>GST Document Path</th>
+                  <th>GST Document Number</th>
                   <th>Full Postal Address</th>
-                  <th>City</th> 
+                  {/* <th>City</th>  */}
                   <th>Active</th>
                   <th>Created Date</th>
                   <th>Created By</th>
@@ -229,41 +309,44 @@ const CustomerList = () => {
                 </tr>
               </thead>
               <tbody>
-                {customers.map((customer) => (
-                  <tr key={customer.customerID}>
-                    <td>{customer.customerID}</td>
-                    <td>{customer.customerName}</td>
-                    <td>{customer.customerAbbreviation}</td>
-                    <td>{customer.customerCode}</td>
-                    <td>{customer.assignedBUID}</td>
-                    <td>{customer.buName}</td>
-                    <td>{customer.buCode}</td>
-                    <td>{customer.gstDocumentPath}</td>
-                    <td>{customer.fullPostalAddress}</td>
-                    <td>{customer.city}</td>
-                    <td>{customer.isActive ? 'Yes' : 'No'}</td>
-                    <td>{formatDate(customer.createdDate)}</td>
-                    <td>{customer.createdByUserName}</td>
-                    <td>
-                      <div className="table-actions">
-                        <button
-                          className="btn-text btn-edit"
-                          onClick={() => handleEdit(customer)}
-                          aria-label="Edit customer"
-                        >
-                          <i className="fas fa-edit"></i> Edit
-                        </button>
-                        <button
-                          className="btn-text btn-delete"
-                          onClick={() => handleDelete(customer)}
-                          aria-label="Delete customer"
-                        >
-                          <i className="fas fa-trash"></i> Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {filteredCustomers.map((customer) => {
+                  const buDetails = getBUDetails(customer.assignedBUID);
+                  return (
+                    <tr key={customer.customerID}>
+                      <td>{customer.customerID}</td>
+                      <td>{customer.customerName}</td>
+                      <td>{customer.customerAbbreviation}</td>
+                      <td>{customer.customerCode}</td>
+                      <td>{customer.assignedBUID}</td>
+                      <td>{buDetails.buName}</td>
+                      <td>{buDetails.buCode}</td>
+                      <td>{customer.gstDocumentPath}</td>
+                      <td>{customer.fullPostalAddress}</td>
+                      {/* <td>{customer.city}</td> */}
+                      <td>{customer.isActive ? 'Yes' : 'No'}</td>
+                      <td>{formatDate(customer.createdDate)}</td>
+                      <td>{customer.createdByUserName}</td>
+                      <td>
+                        <div className="table-actions">
+                          <button
+                            className="btn-text btn-edit"
+                            onClick={() => handleEdit(customer)}
+                            aria-label="Edit customer"
+                          >
+                            <i className="fas fa-edit"></i> Edit
+                          </button>
+                          <button
+                            className="btn-text btn-delete"
+                            onClick={() => handleDelete(customer)}
+                            aria-label="Delete customer"
+                          >
+                            <i className="fas fa-trash"></i> Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

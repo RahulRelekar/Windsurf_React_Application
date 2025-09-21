@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import '../styles/customer-form-3col.css';
 import AsyncSelect from 'react-select/async';
+import AsyncCreatableSelect from 'react-select/async-creatable';
 
 const CustomerForm = ({
   initialData = {},
@@ -21,175 +22,242 @@ const CustomerForm = ({
   //   createdByUserName: 'admin'
   // }
   const isEdit = !!initialData?.customerID;
+  // Form state
   const [selectedCustomer, setSelectedCustomer] = useState(initialData?.customerID ? {
     label: initialData.customerName,
     value: initialData.customerID
   } : null);
+  
   const [selectedBuid, setSelectedBuid] = useState(initialData?.assignedBUID ? {
-    label: initialData.buName,
+    label: initialData.buName || '',
     value: initialData.assignedBUID
   } : null);
-  const [customerAbbreviation, setCustomerAbbreviation] = useState(initialData?.customerAbbreviation || '');
-  const [customerCode, setCustomerCode] = useState(initialData?.customerCode || '');
-  const [assignedBUID, setAssignedBUID] = useState(initialData?.assignedBUID || '');
-  const [buName, setBuName] = useState(initialData?.buName || '');
-  const [buCode, setBuCode] = useState(initialData?.buCode || '');
-  const [gstDocumentPath, setGstDocumentPath] = useState(initialData?.gstDocumentPath || '');
-  const [fullPostalAddress, setFullPostalAddress] = useState(initialData?.fullPostalAddress || '');
-  const [city, setCity] = useState(initialData?.city || '');
-  const [email, setEmail] = useState(initialData?.email || '');
-  const [phone, setPhone] = useState(initialData?.phone || '');
-  const [type, setType] = useState(initialData?.type || '');
-  const [isActive, setIsActive] = useState(
-    typeof initialData?.isActive === 'boolean' ? initialData?.isActive : true
-  );
-
-  const [customerName, setCustomerName] = useState('');
+  
+  const [formData, setFormData] = useState({
+    customerName: initialData?.customerName || '',
+    customerAbbreviation: initialData?.customerAbbreviation || '',
+    customerCode: initialData?.customerCode || '',
+    assignedBUID: initialData?.assignedBUID || '',
+    gstDocumentPath: initialData?.gstDocumentPath || '',
+    fullPostalAddress: initialData?.fullPostalAddress || '',
+    city: initialData?.city || '',
+    email: initialData?.email || '',
+    phone: initialData?.phone || '',
+    type: initialData?.type || '',
+    isActive: typeof initialData?.isActive === 'boolean' ? initialData.isActive : true
+  });
+  
+  // Get BU details based on selected BUID
+  const getBUDetails = (buid) => {
+    if (!buid) return { buName: '', buCode: '' };
+    const bu = businessUnits.find(b => b.buid === buid);
+    return {
+      buName: bu?.buName || '',
+      buCode: bu?.buCode || ''
+    };
+  };
+  
+  // Current BU details based on selected BUID
+  const currentBUDetails = getBUDetails(selectedBuid?.value || formData.assignedBUID);
 
   useEffect(() => {
-    setSelectedCustomer(initialData?.customerID ? {
-      label: initialData.customerName,
-      value: initialData.customerID
-    } : null);
-    setCustomerName(initialData?.customerName || '');
-    setCustomerAbbreviation(initialData?.customerAbbreviation || '');
-    setCustomerCode(initialData?.customerCode || '');
-    setAssignedBUID(initialData?.assignedBUID || '');
-    setBuName(initialData?.buName || '');
-    setBuCode(initialData?.buCode || '');
-    setGstDocumentPath(initialData?.gstDocumentPath || '');
-    setFullPostalAddress(initialData?.fullPostalAddress || '');
-    setCity(initialData?.city || '');
-    setEmail(initialData?.email || '');
-    setPhone(initialData?.phone || '');
-    setType(initialData?.type || '');
-    setIsActive(typeof initialData?.isActive === 'boolean' ? initialData?.isActive : true);
+    if (initialData?.customerID) {
+      setSelectedCustomer({
+        label: initialData.customerName,
+        value: initialData.customerID
+      });
+      
+      setSelectedBuid(initialData.assignedBUID ? {
+        label: initialData.buName || getBUDetails(initialData.assignedBUID).buName,
+        value: initialData.assignedBUID
+      } : null);
+      
+      setFormData({
+        customerName: initialData.customerName || '',
+        customerAbbreviation: initialData.customerAbbreviation || '',
+        customerCode: initialData.customerCode || '',
+        assignedBUID: initialData.assignedBUID || '',
+        gstDocumentPath: initialData.gstDocumentPath || '',
+        fullPostalAddress: initialData.fullPostalAddress || '',
+        city: initialData.city || '',
+        email: initialData.email || '',
+        phone: initialData.phone || '',
+        type: initialData.type || '',
+        isActive: typeof initialData.isActive === 'boolean' ? initialData.isActive : true
+      });
+    } else {
+      // Reset form for new customer
+      setSelectedCustomer(null);
+      setSelectedBuid(null);
+      setFormData({
+        customerName: '',
+        customerAbbreviation: '',
+        customerCode: '',
+        assignedBUID: '',
+        gstDocumentPath: '',
+        fullPostalAddress: '',
+        city: '',
+        email: '',
+        phone: '',
+        type: '',
+        isActive: true
+      });
+    }
   }, [initialData]);
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (name === "gstDocumentPath" || name === "customerAbbreviation"){
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value.toUpperCase()
+    }));
+    return
+    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    const buDetails = getBUDetails(selectedBuid?.value || formData.assignedBUID);
+    
     onSubmit({
       id: initialData?.customerID,
-      customerName: selectedCustomer?.label || '',
-      customerAbbreviation,
-      customerCode,
-      assignedBUID,
-      buName,
-      buCode,
-      gstDocumentPath,
-      fullPostalAddress,
-      city,
-      email,
-      phone,
-      type,
-      isActive,
+      customerName: formData.customerName,
+      customerAbbreviation: formData.customerAbbreviation.toUpperCase(),
+      customerCode: formData.customerCode ||"Default",
+      assignedBUID: selectedBuid?.value || '',
+      buName: buDetails.buName,
+      buCode: buDetails.buCode,
+      gstDocumentPath: formData.gstDocumentPath,
+      fullPostalAddress: formData.fullPostalAddress,
+      city: formData.city,
+      email: formData.email,
+      phone: formData.phone,
+      type: formData.type,
+      isActive: formData.isActive,
     });
   };
 
 
   return (
+    <div>
     <form onSubmit={handleSubmit} className="form-responsive customer-form-grid scrollable ">
-      {isEdit && (
-        <div className="form-group">
-          <label>ID</label>
-          <input type="text" className="form-control" value={initialData?.customerID} disabled readOnly />
-        </div>
-      )}
       <div className="form-group">
         <label htmlFor="customerName">Name<span style={{ color: 'red' }}>*</span></label>
-        {/* drop should be given of cusomter remove input */}
-        {/* <input
-          id="customerName"
-          type="text"
-          className={`form-control ${errors.customerName ? 'is-invalid' : ''}`}
-          value={customerName}
-          onChange={(e) => setCustomerName(e.target.value)}
-          disabled={loading}
-          required
-        /> */}
-        <AsyncSelect
-                id="customerName"
-                name="customerName"
-                cacheOptions
-                defaultOptions
-                loadOptions={(inputValue) => {
-                  return new Promise((resolve) => {
-                    const filteredOptions = customers
-                      .filter((customer) =>
-                        customer.customerName.toLowerCase().includes(inputValue.toLowerCase())
-                      )
-                      .map((customer) => ({
-                        label: customer.customerName,
-                        value: customer.customerID
-                      }));
-                    resolve(filteredOptions);
-                  });
-                }}
-                value={selectedCustomer}
-                onChange={(newValue) => {
-                  setSelectedCustomer(newValue);
-                  setCustomerName(newValue?.label || '');
-                }}
-                placeholder="Search for customer names..."
-                isClearable
-                isDisabled={loading}
-              />
-        {errors.customerName && <div className="invalid-feedback">{errors.customerName}</div>}
+        <AsyncCreatableSelect
+          inputId="customerName"
+          cacheOptions
+          defaultOptions={(customers || []).map((c) => ({
+            label: c.customerName,
+            value: c.customerID,
+            customerAbbreviation: c.customerAbbreviation,
+          }))}
+          loadOptions={(inputValue) => {
+            return new Promise((resolve) => {
+              const filtered = (customers || [])
+                .filter((c) => (c.customerName || '').toLowerCase().includes((inputValue || '').toLowerCase()))
+                .map((c) => ({
+                  label: c.customerName,
+                  value: c.customerID,
+                  customerAbbreviation: c.customerAbbreviation,
+                }));
+              resolve(filtered);
+            });
+          }}
+          value={selectedCustomer}
+          onChange={(newValue) => {
+            if (!newValue) {
+              setSelectedCustomer(null);
+              setFormData((prev) => ({ ...prev, customerName: '', customerAbbreviation: '' }));
+              return;
+            }
+            setSelectedCustomer(newValue);
+            setFormData((prev) => ({
+              ...prev,
+              customerName: newValue.label || '',
+              customerAbbreviation: newValue.customerAbbreviation || prev.customerAbbreviation,
+            }));
+          }}
+          onCreateOption={(inputValue) => {
+            const newOption = { label: inputValue, value: inputValue, __isNew__: true };
+            setSelectedCustomer(newOption);
+            setFormData((prev) => ({ ...prev, customerName: inputValue, customerAbbreviation: '' }));
+          }}
+          placeholder="Select existing customer or type to create..."
+          isClearable
+          isDisabled={loading}
+          className={errors.customerName ? 'is-invalid' : ''}
+          formatCreateLabel={(inputValue) => `Create "${inputValue}"`}
+        />
+        {errors.customerName && (
+          <div className="invalid-feedback">{errors.customerName}</div>
+        )}
       </div>
       <div className="form-group">
         <label htmlFor="customerAbbreviation">Abbreviation</label>
         <input
           id="customerAbbreviation"
+          name="customerAbbreviation"
           type="text"
           className={`form-control ${errors.customerAbbreviation ? 'is-invalid' : ''}`}
-          value={customerAbbreviation}
-          onChange={(e) => setCustomerAbbreviation(e.target.value)}
+          maxLength={4}
+          value={formData.customerAbbreviation}
+          onChange={handleInputChange}
           disabled={loading}
+          placeholder="Enter abbreviation..."
         />
         {errors.customerAbbreviation && <div className="invalid-feedback">{errors.customerAbbreviation}</div>}
       </div>
       <div className="form-group">
         <label htmlFor="buName">BU Name</label>
         <AsyncSelect
-                id="buName"
-                name="buName"
-                cacheOptions
-                defaultOptions
-                loadOptions={(inputValue) => {
-                  return new Promise((resolve) => {
-                    const filteredOptions = businessUnits
-                      .filter((businessUnit) =>
-                        businessUnit.buName.toLowerCase().includes(inputValue.toLowerCase())
-                      )
-                      .map((businessUnit) => ({
-                        label: businessUnit.buName,
-                        value: businessUnit.buid
-                      }));
-                    resolve(filteredOptions);
-                  });
-                }}
-                value={selectedBuid}
-                onChange={(newValue) => {
-                  setSelectedBuid(newValue);
-                  setAssignedBUID(newValue?.value || '');
-                  setBuCode(newValue?.value || '');
-                  setBuName(newValue?.label || '');
-                }}
-                placeholder="Search for bu names..."
-                isClearable
-                isDisabled={loading}
-              />
-        {errors.buName && <div className="invalid-feedback">{errors.buName}</div>}
+          id="buName"
+          name="buName"
+          cacheOptions
+          defaultOptions
+          loadOptions={(inputValue) => {
+            return new Promise((resolve) => {
+              const filteredOptions = (businessUnits || [])
+                .filter((businessUnit) =>
+                  businessUnit.buName.toLowerCase().includes(inputValue.toLowerCase())
+                )
+                .map((businessUnit) => ({
+                  label: businessUnit.buName,
+                  value: businessUnit.buid
+                }));
+              resolve(filteredOptions);
+            });
+          }}
+          value={selectedBuid}
+          onChange={(newValue) => {
+            setSelectedBuid(newValue);
+            const buid = newValue?.value || '';
+            setFormData(prev => ({
+              ...prev,
+              assignedBUID: buid
+            }));
+          }}
+          placeholder="Search for BU names..."
+          isClearable
+          isDisabled={loading}
+          className={errors.assignedBUID ? 'is-invalid' : ''}
+        />
+        {errors.assignedBUID && <div className="invalid-feedback">{errors.assignedBUID}</div>}
       </div>
       <div className="form-group">
         <label htmlFor="assignedBUID">Assigned BUID</label>
         <input
           id="assignedBUID"
-          type="number"
-          className={`form-control ${errors.assignedBUID ? 'is-invalid' : ''}`}
-          value={assignedBUID}
-          onChange={(e) => setAssignedBUID(e.target.value)}
-          disabled={loading}
+          type="text"
+          className="form-control"
+          value={selectedBuid?.value || ''}
+          disabled
+          readOnly
         />
         {errors.assignedBUID && <div className="invalid-feedback">{errors.assignedBUID}</div>}
       </div>
@@ -199,50 +267,38 @@ const CustomerForm = ({
         <input
           id="buCode"
           type="text"
-          className={`form-control ${errors.buCode ? 'is-invalid' : ''}`}
-          value={buCode}
-          onChange={(e) => setBuCode(e.target.value)}
-          disabled={loading}
+          className="form-control"
+          value={currentBUDetails.buCode || ''}
+          disabled
+          readOnly
         />
         {errors.buCode && <div className="invalid-feedback">{errors.buCode}</div>}
       </div>
-
       <div className="form-group">
-        <label htmlFor="customerCode">Customer Code</label>
-        <input
-          id="customerCode"
-          type="text"
-          className={`form-control ${errors.customerCode ? 'is-invalid' : ''}`}
-          value={customerCode}
-          onChange={(e) => setCustomerCode(e.target.value)}
-          disabled={loading}
-        />
-        {errors.customerCode && <div className="invalid-feedback">{errors.customerCode}</div>}
-      </div>
-      
-     
-      
-      <div className="form-group">
-        <label htmlFor="gstDocumentPath">GST Document Path</label>
+        <label htmlFor="gstDocumentPath">GST Document Number</label>
         <input
           id="gstDocumentPath"
+          name="gstDocumentPath"
           type="text"
           className={`form-control ${errors.gstDocumentPath ? 'is-invalid' : ''}`}
-          value={gstDocumentPath}
-          onChange={(e) => setGstDocumentPath(e.target.value)}
+          value={formData.gstDocumentPath}
+          onChange={handleInputChange}
           disabled={loading}
+          placeholder="Enter GST document number..."
         />
         {errors.gstDocumentPath && <div className="invalid-feedback">{errors.gstDocumentPath}</div>}
       </div>
       <div className="form-group">
         <label htmlFor="fullPostalAddress">Full Postal Address</label>
-        <input
+        <textarea
           id="fullPostalAddress"
-          type="text"
+          name="fullPostalAddress"
           className={`form-control ${errors.fullPostalAddress ? 'is-invalid' : ''}`}
-          value={fullPostalAddress}
-          onChange={(e) => setFullPostalAddress(e.target.value)}
+          value={formData.fullPostalAddress}
+          onChange={handleInputChange}
           disabled={loading}
+          rows={3}
+          placeholder="Enter full postal address..."
         />
         {errors.fullPostalAddress && <div className="invalid-feedback">{errors.fullPostalAddress}</div>}
       </div>
@@ -299,8 +355,13 @@ const CustomerForm = ({
         <select
           id="customerActive"
           className="form-control"
-          value={isActive ? 'true' : 'false'}
-          onChange={(e) => setIsActive(e.target.value === 'true')}
+          value={formData.isActive ? 'true' : 'false'}
+          onChange={(e) => 
+            setFormData(prev => ({
+              ...prev,
+              isActive: e.target.value === 'true'
+            }))
+          }
           disabled={loading}
         >
           <option value="true">Yes</option>
@@ -316,15 +377,27 @@ const CustomerForm = ({
       {errors.general && (
         <div className="alert alert-danger mt-2">{errors.general}</div>
       )}
-      <div className="customer-actions" style={{ display: 'flex', gap: '1rem', marginTop: 8 }}>
-        <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={loading}>
-          Cancel
-        </button>
-        <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? 'Saving...' : 'Save'}
-        </button>
-      </div>
+ 
     </form>
+         <div className="form-actions" >
+         <button 
+           type="button" 
+           className="btn btn-secondary" 
+           onClick={onCancel} 
+           disabled={loading}
+         >
+           Cancel
+         </button>
+         <button 
+           type="submit" 
+           className="btn btn-primary" 
+           onClick={handleSubmit}
+           disabled={loading || !formData.customerName || !selectedBuid}
+         >
+           {loading ? 'Saving...' : isEdit ? 'Update' : 'Create'}
+         </button>
+       </div>
+    </div>
   );
 };
 

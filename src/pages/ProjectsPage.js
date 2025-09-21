@@ -107,7 +107,7 @@ const ProjectsPage = () => {
     setActionLoading(project.projectInternalID);
     setError(''); setSuccess('');
     try {
-      await updateProject(project.projectInternalID, project);
+      await updateProject(project.coreProjectID, project);
       setShowCreate(false);
       loadProjects();
     } catch (e) {
@@ -118,8 +118,8 @@ const ProjectsPage = () => {
   const handleGeneratePID = async (project) => {
     setActionLoading(project.projectInternalID);
     setError(''); setSuccess('');
-    try {
-      await generateProjectPID(project.projectInternalID);
+    try { 
+      await generateProjectPID(project.coreProjectID);
       setSuccess('PID generated successfully.');
       setSelectedProject(null);
       loadProjects();
@@ -132,7 +132,7 @@ const ProjectsPage = () => {
     setActionLoading(project.projectInternalID);
     setError(''); setSuccess('');
     try {
-      await submitProjectForSuperAdminReview(project.projectInternalID);
+      await submitProjectForSuperAdminReview(project.coreProjectID);
       setSelectedProject(null);
       loadProjects();
     } catch (e) {
@@ -144,7 +144,7 @@ const ProjectsPage = () => {
     setActionLoading(project.projectInternalID);
     setError(''); setSuccess('');
     try {
-      await adminApproveProject(project.projectInternalID, 'Approved by admin');
+      await adminApproveProject(project.coreProjectID, 'Approved by admin');
       setSuccess('Project approved by admin.');
       setSelectedProject(null);
       loadProjects(); 
@@ -177,7 +177,7 @@ const ProjectsPage = () => {
     setSuperAdminActionLoading(true);
     setError(''); setSuccess('');
     try {
-      await superadminApproveProject(project.projectInternalID, remarks);
+      await superadminApproveProject(project.coreProjectID, remarks);
       setSuccess('Project approved by superadmin.');
       setSelectedProject(null);
       loadProjects();
@@ -196,7 +196,7 @@ const ProjectsPage = () => {
     setSuperAdminActionLoading(true);
     setError(''); setSuccess('');
     try {
-      await superadminRejectProject(project.projectInternalID, remarks);
+      await superadminRejectProject(project.coreProjectID, remarks);
       setSuccess('Project rejected by superadmin.');
       setSelectedProject(null);
       loadProjects();
@@ -320,22 +320,28 @@ const ProjectsPage = () => {
         <p className="error-message">{error}</p>
       ) : (
         <div className="projects-list">
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.projectInternalID}
-              project={project}
-              role={user.role}
-              onEdit={handleEdit}
-              onDelete={handleOpenDeleteModal}
-              onUpdate={handleUpdate}
-              onGeneratePID={handleGeneratePID}
-              onSubmitForSuperAdminReview={onSubmitForSuperAdminReview}
-              onAdminApprove={handleAdminApprove}
-              onAdminReject={handleAdminReject}
-              onSuperadminApprove={() => openSuperAdminRemarksModal(project, 'approve')}
-              onSuperadminReject={() => openSuperAdminRemarksModal(project, 'reject')}
-              loading={actionLoading === project.projectInternalID}
-            />
+        {[...projects] // make a copy to avoid mutating state
+  .sort((a, b) => {
+    const dateA = new Date(a.createdDate).getTime();
+    const dateB = new Date(b.createdDate).getTime();
+    return dateB - dateA; // newest first
+  })
+            .map((project) => (
+              <ProjectCard
+                key={project.projectInternalID}
+                project={project}
+                role={user.role}
+                onEdit={handleEdit}
+                onDelete={handleOpenDeleteModal}
+                onUpdate={handleUpdate}
+                onGeneratePID={handleGeneratePID}
+                onSubmitForSuperAdminReview={onSubmitForSuperAdminReview}
+                onAdminApprove={handleAdminApprove}
+                onAdminReject={handleAdminReject}
+                onSuperadminApprove={() => openSuperAdminRemarksModal(project, 'approve')}
+                onSuperadminReject={() => openSuperAdminRemarksModal(project, 'reject')}
+                loading={actionLoading === project.projectInternalID}
+              />
           ))}
         </div>
       )}

@@ -11,6 +11,7 @@ import Modal from '../components/Modal';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import ProjectForm from '../components/ProjectForm';
 import { createProjectAction, deleteProjectAction, listProjects, updateProjectAction } from '../actions/projectActions';
+import '../styles/ProjectsCreatePage.css';
 
 const ProjectsCreatePage = () => {
   const dispatch = useDispatch();
@@ -32,6 +33,7 @@ const ProjectsCreatePage = () => {
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [searchProject, setSearchProject] = useState('');
 
   useEffect(() => {
     dispatch(listProjects());
@@ -106,9 +108,11 @@ const ProjectsCreatePage = () => {
     return `${day} ${month} ${year}`;
   };
 
+  const filteredProjects = projects.filter((p) => (p.projectName || '').toLowerCase().includes(searchProject.toLowerCase()));
+
   const renderBusinessUnitCards = () => (
     <div className="businessunit-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {projects.map((bu) => (
+      {filteredProjects.map((bu) => (
         <div
           key={bu.coreProjectID}
           className="businessunit-card"
@@ -173,18 +177,28 @@ const ProjectsCreatePage = () => {
   return (
     <section>
       {!error && (
-        <div style={{ 
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-          marginBottom: '10px'
-        }}>
+        <div className="projects-header">
           <h1>Projects</h1>
-        <div className="add-button-container">
-          <button className="btn btn-add" onClick={handleAdd}>Add Project</button>
-        </div>
+          <div className="projects-controls">
+            <div className="search-inputs">
+              <div className="search-input-wrapper">
+                <i className="fas fa-search search-icon"></i>
+                <input
+                  type="text"
+                  placeholder="Search Project Name"
+                  value={searchProject}
+                  onChange={(e) => setSearchProject(e.target.value)}
+                  className="form-control search-input"
+                />
+              </div>
+            </div>
+            <div className="add-button-container">
+              <button className="btn btn-add" onClick={handleAdd}>
+                <i className="fas fa-plus"></i>
+                <span>Add Project</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
       <Modal isOpen={isModalOpen} onClose={handleModalClose} title={selectedBusinessUnit ? 'Edit Project' : 'Add Project'}>
@@ -204,52 +218,54 @@ const ProjectsCreatePage = () => {
         <>
           {/* Desktop Table View */}
           <div className="desktop-view">
-            <table className="user-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  {/* <th>Code</th> */}
-                  <th>Name</th>
-                 
-                  <th>Abbreviation</th>
-                  <th>Active</th>
-                  <th>Created Date</th>
-                  {/* <th>Created By</th> */}
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {projects.map((bu) => (
-                  <tr key={bu.coreProjectID}>
-                    <td>{bu.coreProjectID}</td>
-                    {/* <td>{bu.buCode}</td> */}
-                    <td>{bu.projectName}</td>
-                    <td>{bu.projectAbbreviation}</td>
-                    <td>{bu.isActive ? 'Yes' : 'No'}</td>
-                    <td>{formatDate(bu.createdDate)}</td>
-                    {/* <td>{bu.createdByUserName}</td> */}
-                    <td>
-                      <div className="table-actions">
-                        <button
-                          className="btn-text btn-edit"
-                          onClick={() => handleEdit(bu)}
-                          aria-label="Edit business unit"
-                        >
-                          <i className="fas fa-edit"></i> Edit
-                        </button>
-                        <button
-                          className="btn-text btn-delete"
-                          onClick={() => handleDelete(bu)}
-                          aria-label="Delete business unit"
-                        >
-                          <i className="fas fa-trash"></i> Delete
-                        </button>
-                      </div>
-                    </td>
+            <div className="projects-table-wrapper">
+              <table className="user-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    {/* <th>Code</th> */}
+                    <th>Name</th>
+                    
+                    <th>Abbreviation</th>
+                    <th>Active</th>
+                    <th>Created Date</th>
+                    {/* <th>Created By</th> */}
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredProjects.map((bu) => (
+                    <tr key={bu.coreProjectID}>
+                      <td>{bu.coreProjectID}</td>
+                      {/* <td>{bu.buCode}</td> */}
+                      <td>{bu.projectName}</td>
+                      <td>{bu.projectAbbreviation}</td>
+                      <td>{bu.isActive ? 'Yes' : 'No'}</td>
+                      <td>{formatDate(bu.createdDate)}</td>
+                      {/* <td>{bu.createdByUserName}</td> */}
+                      <td>
+                        <div className="table-actions">
+                          <button
+                            className="btn-text btn-edit"
+                            onClick={() => handleEdit(bu)}
+                            aria-label="Edit business unit"
+                          >
+                            <i className="fas fa-edit"></i> Edit
+                          </button>
+                          <button
+                            className="btn-text btn-delete"
+                            onClick={() => handleDelete(bu)}
+                            aria-label="Delete business unit"
+                          >
+                            <i className="fas fa-trash"></i> Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
           {/* Mobile Card View */}
           <div className="mobile-view">

@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import { getUserInfo, handleAuthError } from '../utils/auth';
 
 const api = axios.create({
   baseURL:'https://pidcreation.azurewebsites.net/api',
@@ -11,7 +11,7 @@ const api = axios.create({
 // Request interceptor to add the auth token to every request
 api.interceptors.request.use(
   (config) => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const userInfo = getUserInfo();
 
     if (userInfo && userInfo.token) {
       config.headers.Authorization = `Bearer ${userInfo.token}`;
@@ -27,16 +27,47 @@ api.interceptors.response.use(
   (response) => response,
   // If there was an error, parse it and return a standardized error message
   (error) => {
+    // Handle 401 Unauthorized - redirect to login
+    if (error.response && error.response.status === 401) {
+      // Use auth utility to handle logout and redirect
+      handleAuthError();
+      
+      return Promise.reject({ 
+        message: 'Your session has expired. Please log in again.',
+        status: 401 
+      });
+    }
+
+    // Handle network errors (no response from server)
+    if (error.code === 'ERR_NETWORK' || !error.response) {
+      handleAuthError();
+      // For network errors, check if we have a token but can't reach server
+      // This might indicate the server is down or network issues
+      const userInfo = getUserInfo();
+      if (userInfo && userInfo.token) {
+        // We have a token but can't reach the server - this is a network issue, not auth issue
+        return Promise.reject({ 
+          message: 'Could not connect to the server. Please check your network connection.',
+          code: 'NETWORK_ERROR'
+        });
+      } else {
+        // No token and network error - might be auth related, redirect to login
+        handleAuthError();
+        return Promise.reject({ 
+          message: 'Network error. Please log in again.',
+          code: 'NETWORK_ERROR'
+        });
+      }
+    }
+
     // If the error has a response and data, pass it along.
     if (error.response && error.response.data) {
       return Promise.reject(error.response.data);
     }
 
-    // Handle network errors or other issues without a response.
+    // Handle other errors
     let errorMessage = 'An unexpected error occurred. Please try again.';
-    if (error.request) {
-      errorMessage = 'Could not connect to the server. Please check your network connection.';
-    } else if (error.message) {
+    if (error.message) {
       errorMessage = error.message;
     }
 

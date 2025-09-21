@@ -1,54 +1,26 @@
-/* Horizontally scrollable table for customer list */
-.desktop-view {
-  width: 100%;
-}
-.desktop-view > div[style*='overflow-x'] {
-  overflow-x: auto;
-  width: 100%;
-}
-.user-table {
-  min-width: 600px;
-}
-
-/* Wider modal and scrollable modal body for customer forms */
-.wide-modal .modal-content {
-  max-width: 600px;
-  width: 95vw;
-}
-.scrollable-modal .modal-body {
-  max-height: 70vh;
+.projects-table-wrapper {
+  /* Allow vertical and horizontal scrolling within the table area */
   overflow-y: auto;
+  overflow-x: auto;
+
+  /* Give the table area a viewport-relative height so it can scroll */
+  max-height: 85vh;
+  -webkit-overflow-scrolling: touch;
+
+  /* Optional: small inner padding so the scrollbar doesn't overlay content */
+  padding-bottom: 4px;
 }
 
-/* Responsive two-column grid for customer form fields */
-.customer-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem 2rem;
-}
-.customer-form-grid .form-group {
-  min-width: 0;
-}
-@media (max-width: 700px) {
-  .customer-form-grid {
-    grid-template-columns: 1fr;
-  }
-  .wide-modal .modal-content {
-    max-width: 98vw;
-  }
+/* Make header row stay visible while scrolling (optional) */
+.projects-table-wrapper table thead th {
+  position: sticky;
+  top: 0;
+  background: #f8f9fa;
+  z-index: 1;
 }
 
-/* Ensure modal actions are always visible at the bottom */
-.customer-actions {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-/* Customer page header and controls */
-.customers-header {
+/* Projects page header and controls */
+.projects-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -58,7 +30,7 @@
   border-bottom: 2px solid #e9ecef;
 }
 
-.customers-header h1 {
+.projects-header h1 {
   font-size: 2rem;
   font-weight: 700;
   color: #2c3e50;
@@ -66,7 +38,7 @@
   text-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.customers-controls {
+.projects-controls {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -101,7 +73,7 @@
   border: 2px solid #e9ecef !important;
   border-radius: 8px !important;
   font-size: 0.95rem !important;
-  width: 220px;
+  width: 260px;
   transition: all 0.3s ease;
   background: #ffffff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -140,19 +112,19 @@
 
 /* Mobile responsive design */
 @media (max-width: 768px) {
-  .customers-header {
+  .projects-header {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
     padding: 0.75rem 0;
   }
 
-  .customers-header h1 {
+  .projects-header h1 {
     font-size: 1.5rem;
     text-align: center;
   }
 
-  .customers-controls {
+  .projects-controls {
     flex-direction: column;
     gap: 1rem;
   }
@@ -185,11 +157,11 @@
 }
 
 @media (max-width: 480px) {
-  .customers-header {
+  .projects-header {
     margin-bottom: 1rem;
   }
 
-  .customers-header h1 {
+  .projects-header h1 {
     font-size: 1.25rem;
   }
 
@@ -212,6 +184,6 @@
   }
 
   .search-input {
-    width: 200px;
+    width: 240px;
   }
 }
