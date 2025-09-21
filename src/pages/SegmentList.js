@@ -9,6 +9,7 @@ import {
 import SegmentForm from '../components/SegmentForm';
 import Modal from '../components/Modal';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import Loader from '../components/Loader';
 
 const SegmentList = () => {
   const dispatch = useDispatch();
@@ -188,7 +189,15 @@ const SegmentList = () => {
         {(errorCreate || errorUpdate) && renderErrors(errorCreate || errorUpdate)}
       </Modal>
       {loading ? (
-        <p>Loading...</p>
+     <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignSelf: 'center',
+      height: '300px',
+      width: '100%'
+    }}>
+      <Loader text="Loading segments..." />
+    </div>
       ) : error ? (
         renderErrors(error)
       ) : (

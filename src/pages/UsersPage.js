@@ -6,6 +6,7 @@ import { USER_CREATE_RESET, USER_UPDATE_RESET } from '../constants/userConstants
 import Modal from '../components/Modal';
 import UserForm from '../components/UserForm';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import Loader from '../components/Loader';
 
 const UsersPage = () => {
   const dispatch = useDispatch();
@@ -189,7 +190,15 @@ const UsersPage = () => {
       </Modal>
 
       {loading ? (
-        <p>Loading...</p>
+       <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignSelf: 'center',
+        height: '300px',
+        width: '100%'
+      }}>
+        <Loader text="Loading users..." />
+      </div>
       ) : error ? (
         renderErrors(error)
       ) : (

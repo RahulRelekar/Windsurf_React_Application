@@ -9,6 +9,7 @@ import {
 import BillingTypeForm from '../components/BillingTypeForm';
 import Modal from '../components/Modal';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import Loader from '../components/Loader';
 
 const BillingTypeList = () => {
   const dispatch = useDispatch();
@@ -199,7 +200,15 @@ const BillingTypeList = () => {
         {(errorCreate || errorUpdate) && renderErrors(errorCreate || errorUpdate)}
       </Modal>
       {loading ? (
-        <p>Loading...</p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignSelf: 'center',
+          height: '300px',
+          width: '100%'
+        }}>
+          <Loader text="Loading Billing Types..." />
+        </div>
       ) : error ? (
         renderErrors(error)
       ) : (

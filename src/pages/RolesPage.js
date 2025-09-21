@@ -5,6 +5,7 @@ import { ROLE_CREATE_RESET, ROLE_UPDATE_RESET } from '../constants/roleConstants
 import Modal from '../components/Modal';
 import RoleForm from '../components/RoleForm';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import Loader from '../components/Loader';
 
 const RolesPage = () => {
   const dispatch = useDispatch();
@@ -168,7 +169,15 @@ const RolesPage = () => {
       </Modal>
 
       {loading ? (
-        <p>Loading...</p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignSelf: 'center',
+          height: '300px',
+          width: '100%'
+        }}>
+          <Loader text="Loading roles..." />
+        </div>
       ) : error ? (
         renderErrors(error)
       ) : (

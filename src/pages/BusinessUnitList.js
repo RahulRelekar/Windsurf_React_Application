@@ -9,6 +9,7 @@ import {
 import BusinessUnitForm from '../components/BusinessUnitForm';
 import Modal from '../components/Modal';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import Loader from '../components/Loader';
 
 const BusinessUnitList = () => {
   const dispatch = useDispatch();
@@ -196,7 +197,15 @@ const BusinessUnitList = () => {
         {(errorCreate || errorUpdate) && renderErrors(errorCreate || errorUpdate)}
       </Modal>
       {loading ? (
-        <p>Loading...</p>
+         <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignSelf: 'center',
+          height: '300px',
+          width: '100%'
+        }}>
+          <Loader text="Loading Business Units..." />
+        </div>
       ) : error ? (
         renderErrors(error)
       ) : (

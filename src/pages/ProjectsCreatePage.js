@@ -12,6 +12,7 @@ import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import ProjectForm from '../components/ProjectForm';
 import { createProjectAction, deleteProjectAction, listProjects, updateProjectAction } from '../actions/projectActions';
 import '../styles/ProjectsCreatePage.css';
+import Loader from '../components/Loader';
 
 const ProjectsCreatePage = () => {
   const dispatch = useDispatch();
@@ -211,7 +212,15 @@ const ProjectsCreatePage = () => {
         {(errorCreate || errorUpdate) && renderErrors(errorCreate || errorUpdate)}
       </Modal>
       {loading ? (
-        <p>Loading...</p>
+         <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignSelf: 'center',
+          height: '300px',
+          width: '100%'
+        }}>
+          <Loader text="Loading Core projects..." />
+        </div>
       ) : error ? (
         renderErrors(error)
       ) : (

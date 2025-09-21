@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Loader from '../components/Loader';
 import ProjectCard from '../components/ProjectCard';
 import ProjectCreateModal from '../components/ProjectCreateModal';
 import {
@@ -253,6 +254,7 @@ const ProjectsPage = () => {
     <div className="projects-page">
       <div className="projects-header">
   <h1>Projects</h1>
+  {/* I want to give filter option for the projects based on the Customer:Business Unit:Billing Type:Segment:Status, values should be fetched from the database */}
   {(user.role === 'Admin' || user.role === 'SuperAdmin') && (
     <button 
       className="btn btn-add" 
@@ -315,11 +317,20 @@ const ProjectsPage = () => {
         onSubmit={handleUpdate}
       />
       {loading ? (
-        <p>Loading projects...</p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignSelf: 'center',
+          height: '300px',
+          width: '100%'
+        }}>
+          <Loader text="Loading projects..." />
+        </div>
       ) : error ? (
         <p className="error-message">{error}</p>
       ) : (
         <div className="projects-list">
+
         {[...projects] // make a copy to avoid mutating state
   .sort((a, b) => {
     const dateA = new Date(a.createdDate).getTime();

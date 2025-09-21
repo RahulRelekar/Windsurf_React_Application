@@ -11,6 +11,7 @@ import Modal from '../components/Modal';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import '../styles/customer-module-overrides.css';
 import { listBusinessUnits } from '../actions/businessUnitActions';
+import Loader from '../components/Loader';
 
 const CustomerList = () => {
   const dispatch = useDispatch();
@@ -282,7 +283,15 @@ const CustomerList = () => {
         {(errorCreate || errorUpdate) && renderErrors(normalizeFieldErrors(errorCreate || errorUpdate).general)}
       </Modal>
       {loading ? (
-        <p>Loading...</p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignSelf: 'center',
+          height: '300px',
+          width: '100%'
+        }}>
+          <Loader text="Loading customers..." />
+        </div>
       ) : error ? (
         renderErrors(error)
       ) : (
