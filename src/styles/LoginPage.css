@@ -1,7 +1,8 @@
 /* src/styles/LoginPage.css */
 
 .login-body {
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   height: 100%;
   width: 100%;
   margin: 0;
@@ -11,9 +12,17 @@
 
 .login-page-wrapper {
   display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
+  min-height: 100vh;
+  width: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@supports (height: 100dvh) {
+  .login-page-wrapper {
+    min-height: 100dvh;
+  }
 }
 
 .login-info-section {
@@ -198,6 +207,11 @@
     padding: 2rem;
   }
 
+  .login-form-section {
+    min-height: auto;
+    padding: 1.5rem 1rem;
+  }
+
   .wow-login-title {
     font-size: 2rem;
   }
@@ -207,5 +221,11 @@
     max-height: 100%;
     box-shadow: none;
     border-radius: 0;
+    min-height: auto;
+    padding: 2rem 1.25rem;
+  }
+
+  .form-group input {
+    padding: 0.95rem 1rem;
   }
 }
