@@ -321,29 +321,7 @@ const ProjectCreateModal = ({ open, onClose, onSubmit, loading, error, project, 
         </div>
         <form onSubmit={handleSubmit}>
           <div className="project-form">
-            <div className="form-group">
-              <label htmlFor="coreProjectID">Project Name</label>
-              <AsyncSelect
-                id="coreProjectID"
-                name="coreProjectID"
-                cacheOptions
-                defaultOptions
-                loadOptions={loadOptions(getProjects, 'projectName', 'coreProjectID')}
-                value={form.coreProjectID ? { 
-                  label: form.projectName || 'Loading...', 
-                  value: form.coreProjectID 
-                } : null}
-                onChange={handleSelectChange}
-                placeholder="Search for a project names..."
-                isClearable
-              />
-              {errors.coreProjectID && <div className="error">{errors.coreProjectID}</div>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="projectAbbreviation">Abbreviation (4 chars)</label>
-              <input editable={false} disabled={true} id="projectAbbreviation" name="projectAbbreviation" value={form.projectAbbreviation} onChange={handleChange} maxLength={4} required />
-              {errors.projectAbbreviation && <div className="error">{errors.projectAbbreviation}</div>}
-            </div>
+          
             <div className="form-group">
               <label htmlFor="buid">Business Unit<span style={{ color: 'red' }}>*</span></label>
               <AsyncSelect
@@ -390,6 +368,29 @@ const ProjectCreateModal = ({ open, onClose, onSubmit, loading, error, project, 
               {errors.customerID && <div className="error">{errors.customerID}</div>}
             </div>
           
+            <div className="form-group">
+              <label htmlFor="coreProjectID">Project Name</label>
+              <AsyncSelect
+                id="coreProjectID"
+                name="coreProjectID"
+                cacheOptions
+                defaultOptions
+                loadOptions={loadOptions(getProjects, 'projectName', 'coreProjectID')}
+                value={form.coreProjectID ? { 
+                  label: form.projectName || 'Loading...', 
+                  value: form.coreProjectID 
+                } : null}
+                onChange={handleSelectChange}
+                placeholder="Search for a project names..."
+                isClearable
+              />
+              {errors.coreProjectID && <div className="error">{errors.coreProjectID}</div>}
+            </div>
+            <div className="form-group">
+              <label htmlFor="projectAbbreviation">Abbreviation (4 chars)</label>
+              <input editable={false} disabled={true} id="projectAbbreviation" name="projectAbbreviation" value={form.projectAbbreviation} onChange={handleChange} maxLength={4} required />
+              {errors.projectAbbreviation && <div className="error">{errors.projectAbbreviation}</div>}
+            </div>
             <div className="form-group">
               <label htmlFor="billingTypeID">Billing Type</label>
               <AsyncSelect

@@ -62,7 +62,16 @@ const Layout = ({ children, title }) => {
               </>
             )}
           
-            <li><NavLink to="/projects-id-generator">Projects ID Generator</NavLink></li>
+ {user.role === "Admin" &&         <>           
+            <li><NavLink to="/billing-types">Billing Type Management</NavLink></li>
+            <li><NavLink to="/business-units">Business Unit Management</NavLink></li>
+            <li><NavLink to="/segments">Segment Management</NavLink></li>
+            <li><NavLink to="/customers">Customer Management</NavLink></li>
+            <li><NavLink to="/projects">Projects</NavLink></li>
+          <li><NavLink to="/projects-id-generator">Projects ID Generator</NavLink></li>
+
+            </> 
+}
           </ul>
         </nav>
         <div className="sidebar-footer">

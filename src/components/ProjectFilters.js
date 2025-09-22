@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './ProjectFilters.css';
 
 const ProjectFilters = ({
@@ -13,6 +13,25 @@ const ProjectFilters = ({
   onChange,
   onReset
 }) => {
+  const initialOpen = typeof window !== 'undefined'
+    ? !window.matchMedia('(max-width: 768px)').matches
+    : true; // default to open in non-browser environments
+  const [isOpen, setIsOpen] = useState(initialOpen);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const update = () => {
+      setIsOpen(!mq.matches); // open on desktop, collapsed on mobile
+    };
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  const activeFiltersCount = useMemo(() => {
+    const keys = ['customerID', 'buid', 'billingTypeID', 'segmentID', 'status'];
+    return keys.reduce((acc, k) => acc + ((values && values[k]) ? 1 : 0), 0);
+  }, [values]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     onChange && onChange(name, value);
@@ -24,7 +43,26 @@ const ProjectFilters = ({
 
   return (
     <div className="projects-filters">
-      <div className="filters-grid">
+      <div className="filters-header">
+        <button
+          type="button"
+          className="filters-toggle"
+          onClick={() => setIsOpen((o) => !o)}
+          aria-expanded={isOpen}
+          aria-controls="projects-filters-grid"
+        >
+          {isOpen ? 'Hide Filters' : 'Show Filters'}
+        </button>
+        <div className="filters-meta">
+          <span className="filters-count">
+            {activeFiltersCount > 0 ? `${activeFiltersCount} filter${activeFiltersCount > 1 ? 's' : ''} applied` : 'No filters'}
+          </span>
+          <button type="button" className="filters-reset-link" onClick={onReset}>
+            Reset
+          </button>
+        </div>
+      </div>
+      <div id="projects-filters-grid" className={`filters-grid ${isOpen ? 'open' : ''}`}>
         <div className="filter-item">
           <label>Customer</label>
           <select name="customerID" value={values.customerID || ''} onChange={handleChange}>
