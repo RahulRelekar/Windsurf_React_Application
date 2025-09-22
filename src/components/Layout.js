@@ -42,9 +42,12 @@ const Layout = ({ children, title }) => {
   )}
 </button>
       <div className="mobile-overlay" onClick={toggleSidebar}></div>
+   
       <aside className="sidebar">
-        <h3>PID Tool</h3>
+      
         <nav>
+        <h3>PID</h3>
+        <h3>Generator Tool</h3>
           <ul>
             {user.role === "SuperAdmin" && (
               <>

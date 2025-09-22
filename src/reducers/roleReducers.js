@@ -34,7 +34,7 @@ export const roleListReducer = (state = { roles: [] }, action) => {
     case ROLE_DELETE_SUCCESS:
       return {
         ...state,
-        roles: state.roles.filter((role) => role.roleId !== action.payload),
+        roles: state.roles?.filter((role) => role.roleId !== action.payload),
       };
 
     default:

@@ -34,7 +34,7 @@ export const userListReducer = (state = { users: [] }, action) => {
     case USER_DELETE_SUCCESS:
       return {
         ...state,
-        users: state.users.filter((user) => user.userId !== action.payload),
+        users: state.users?.filter((user) => user.userId !== action.payload),
       };
 
     default:

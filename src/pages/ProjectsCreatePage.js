@@ -109,7 +109,7 @@ const ProjectsCreatePage = () => {
     return `${day} ${month} ${year}`;
   };
 
-  const filteredProjects = projects.filter((p) => (p.projectName || '').toLowerCase().includes(searchProject.toLowerCase()));
+  const filteredProjects = projects?.filter((p) => (p.projectName || '').toLowerCase().includes(searchProject.toLowerCase()));
 
   const renderBusinessUnitCards = () => (
     <div className="businessunit-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

@@ -152,7 +152,7 @@ const CustomerForm = ({
         <AsyncCreatableSelect
           inputId="customerName"
           cacheOptions
-          defaultOptions={(customers || []).map((c) => ({
+          defaultOptions={(customers || [])?.map((c) => ({
             label: c.customerName,
             value: c.customerID,
             customerAbbreviation: c.customerAbbreviation,
@@ -160,8 +160,8 @@ const CustomerForm = ({
           loadOptions={(inputValue) => {
             return new Promise((resolve) => {
               const filtered = (customers || [])
-                .filter((c) => (c.customerName || '').toLowerCase().includes((inputValue || '').toLowerCase()))
-                .map((c) => ({
+                ?.filter((c) => (c.customerName || '').toLowerCase().includes((inputValue || '').toLowerCase()))
+                ?.map((c) => ({
                   label: c.customerName,
                   value: c.customerID,
                   customerAbbreviation: c.customerAbbreviation,
@@ -223,10 +223,10 @@ const CustomerForm = ({
           loadOptions={(inputValue) => {
             return new Promise((resolve) => {
               const filteredOptions = (businessUnits || [])
-                .filter((businessUnit) =>
+                ?.filter((businessUnit) =>
                   businessUnit.buName.toLowerCase().includes(inputValue.toLowerCase())
                 )
-                .map((businessUnit) => ({
+                ?.map((businessUnit) => ({
                   label: businessUnit.buName,
                   value: businessUnit.buid
                 }));

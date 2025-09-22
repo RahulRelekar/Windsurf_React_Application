@@ -167,7 +167,7 @@ const CustomerList = () => {
     return result;
   };
 
-  const filteredCustomers = customers.filter((customer) => {
+  const filteredCustomers = customers?.filter((customer) => {
     const nameMatch = (customer.customerName || '').toLowerCase().includes(searchCustomer.toLowerCase());
     const buDetails = getBUDetails(customer.assignedBUID);
     const buMatch = buDetails.buName.toLowerCase().includes(searchBU.toLowerCase());

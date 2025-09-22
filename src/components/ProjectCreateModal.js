@@ -263,8 +263,8 @@ const ProjectCreateModal = ({ open, onClose, onSubmit, loading, error, project, 
     try {
       const { data } = await apiCall();
       return data
-        .filter(item => (item[labelKey] || '').toLowerCase().includes((inputValue || '').toLowerCase()))
-        .map(item => ({ label: item[labelKey], value: item[valueKey], item }));
+        ?.filter(item => (item[labelKey] || '').toLowerCase().includes((inputValue || '').toLowerCase()))
+        ?.map(item => ({ label: item[labelKey], value: item[valueKey], item }));
     } catch (error) {
       console.error('Failed to load options:', error);
       return [];
@@ -293,7 +293,7 @@ const ProjectCreateModal = ({ open, onClose, onSubmit, loading, error, project, 
       if (!selectedBuid) return [];
 
       const selectedBuidNum = Number(selectedBuid);
-      const filteredCustomers = (customers || []).filter((customer) => {
+      const filteredCustomers = (customers || [])?.filter((customer) => {
         const customerBuid = customer.assignedBUID;
         const nameMatch = (customer.customerName || '').toLowerCase().includes((inputValue || '').toLowerCase());
         return customerBuid === selectedBuidNum && nameMatch;
