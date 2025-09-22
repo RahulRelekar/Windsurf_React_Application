@@ -432,7 +432,6 @@ const ProjectsPage = () => {
           </button>
         )}
       </div>
-
       <ProjectFilters
         customers={customers}
         businessUnits={businessUnits}

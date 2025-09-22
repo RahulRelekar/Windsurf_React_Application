@@ -106,7 +106,7 @@ const UsersPage = () => {
 
   // Mobile card view renderer
   const renderUserCards = () => (
-    <div className="user-cards">
+    <div className="user-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', height: 'calc(100vh - 200px)' }}>
       {users.map((user) => {
         const userRole = user.role || 
           (user.roleId && Array.isArray(roles) && 
@@ -173,7 +173,7 @@ const UsersPage = () => {
         marginBottom: '10px'
       }}>
       <h1>Users</h1>
-    <div className="add-button-container">
+    <div className="add-button-container" style={{width: '60%', marginTop: 20}}>
         <button className="btn btn-add" onClick={handleAddUser}>Add User</button>
       </div>
     </div>

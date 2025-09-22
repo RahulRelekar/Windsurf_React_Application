@@ -48,7 +48,7 @@ const Layout = ({ children, title }) => {
         <nav>
         <h3>PID</h3>
         <h3>Generator Tool</h3>
-          <ul>
+          <ul onClick={toggleSidebar}>
             {user.role === "SuperAdmin" && (
               <>
                 <li><NavLink to="/dashboard">Dashboard</NavLink></li>

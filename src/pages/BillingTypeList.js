@@ -105,7 +105,7 @@ const BillingTypeList = () => {
 
   // Mobile card view renderer (responsive, no overlap)
   const renderBillingTypeCards = () => (
-    <div className="billingtype-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <div className="billingtype-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', height: 'calc(100vh - 200px)' }}>
       {billingTypes.map((bt) => (
         <div
           key={bt.billingTypeID}

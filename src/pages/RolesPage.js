@@ -102,7 +102,7 @@ const RolesPage = () => {
 
   // Mobile card view renderer for roles
   const renderRoleCards = () => (
-    <div className="role-cards">
+    <div className="role-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', height: 'calc(100vh - 200px)' }}>
       {roles.map((role) => (
         <div key={role.roleId} className="role-card">
           <div className="role-info">
@@ -152,7 +152,7 @@ const RolesPage = () => {
         marginBottom: '10px'
       }}>
       <h1>Roles</h1>
-    <div className="add-button-container">
+    <div className="add-button-container" style={{width: '60%', marginTop: 20}}>
         <button className="btn btn-add" onClick={handleAddRole}>Add Role</button>
       </div>
     </div>

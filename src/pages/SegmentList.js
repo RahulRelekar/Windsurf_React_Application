@@ -106,7 +106,7 @@ const SegmentList = () => {
   };
 
   const renderSegmentCards = () => (
-    <div className="segment-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <div className="segment-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', height: 'calc(100vh - 200px)' }}>
       {segments.map((seg) => (
         <div
           key={seg.segmentID}
@@ -174,7 +174,7 @@ const SegmentList = () => {
           marginBottom: '10px'
         }}>
           <h1>Segments</h1>
-        <div className="add-button-container">
+        <div className="add-button-container" style={{width: '50%', marginTop: 20}}>
           <button className="btn btn-add" onClick={handleAdd}>Add Segment</button>
         </div>
         </div>

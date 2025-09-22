@@ -112,7 +112,7 @@ const ProjectsCreatePage = () => {
   const filteredProjects = projects?.filter((p) => (p.projectName || '').toLowerCase().includes(searchProject.toLowerCase()));
 
   const renderBusinessUnitCards = () => (
-    <div className="businessunit-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <div className="businessunit-cards" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', height: 'calc(100vh - 200px)' }}>
       {filteredProjects.map((bu) => (
         <div
           key={bu.coreProjectID}
@@ -193,7 +193,7 @@ const ProjectsCreatePage = () => {
                 />
               </div>
             </div>
-            <div className="add-button-container">
+            <div className="add-button-container" style={{marginTop:20}}>
               <button className="btn btn-add" onClick={handleAdd}>
                 <i className="fas fa-plus"></i>
                 <span>Add Project</span>
