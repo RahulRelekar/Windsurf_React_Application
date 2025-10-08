@@ -428,7 +428,7 @@ const ProjectsPage = () => {
             onClick={() => {setShowCreate(true); setSelectedProject(null)}}
             style={{ marginLeft: 'auto' }}
           >
-            Add Project
+            Create New Project ID
           </button>
         )}
       </div>
